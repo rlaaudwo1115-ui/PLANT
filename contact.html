@@ -85,6 +85,24 @@
 
         .submit-btn { display: inline-block; margin-top: 20px; padding: 15px 40px; background-color: #111; color: #fff; text-decoration: none; font-size: 16px; font-weight: bold; letter-spacing: 1px; transition: background-color 0.3s ease; }
         .submit-btn:hover { background-color: #333; }
+
+        /* 📱 모바일 반응형 최적화 */
+        @media (max-width: 768px) {
+            header { padding: 20px 24px; }
+            .logo { font-size: 20px; }
+            .nav-links { gap: 20px; }
+            .nav-links a { font-size: 14px; }
+
+            .submit-container { padding: 100px 20px 60px 20px; }
+            .page-header h1 { font-size: 28px; }
+            .page-header p { font-size: 15px; }
+            .guide-step h2 { font-size: 18px; }
+            .guide-step p, .guide-step ul { font-size: 14px; }
+            .submit-btn { width: 100%; box-sizing: border-box; text-align: center; padding: 14px 20px; }
+
+            .dropdown-menu { left: auto; right: -40px; transform: none; }
+            .submenu { left: auto; right: 100%; }
+        }
     </style>
 </head>
 <body>
