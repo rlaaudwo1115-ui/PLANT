@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAA! Plant - Upload & Admin</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background-color: #f8f9fa; color: #222; line-height: 1.6; letter-spacing: -0.3px; 
+        }
+
+        header { 
+            position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; 
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000; 
+            background-color: #f8f9fa; border-bottom: 1px solid #dcdcdc; 
+        }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
+
+        .container { 
+            padding: 140px 60px 100px 60px; 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+
+        .page-title { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #111; }
+        .page-desc { font-size: 15px; color: #666; margin-bottom: 40px; }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            margin-bottom: 50px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .req { color: #e53e3e; }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: #fafafa;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: #111;
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .file-hint {
+            font-size: 13px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background-color: #111;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #333;
+        }
+
+        .btn-submit:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .migration-box {
+            background: #fff;
+            border: 1px dashed #bbb;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .migration-btn {
+            padding: 10px 24px;
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .migration-btn:hover { background-color: #2d3748; }
+
+        /* 상태 알림 모달/메시지 */
+        #status-msg {
+            display: none;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-success { background-color: #def7ec; color: #03543f; border: 1px solid #bcf0da; }
+        .status-error { background-color: #fde8e8; color: #9b1c1c; border: 1px solid #f8b4b4; }
+        .status-loading { background-color: #e1effe; color: #1e429f; border: 1px solid #b4c6fc; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="main.html" class="logo">PLANT</a>
+        <nav class="nav-links">
+            <a href="main.html">Project</a>
+            <a href="info.html">Info</a>
+            <a href="contact.html">Contact</a>
+            <a href="admin.html" class="active">Upload</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">새 프로젝트 등록하기</h1>
+        <p class="page-desc">프로젝트 정보와 이미지를 입력하면 Supabase DB 및 이미지 스토리지에 자동으로 등록됩니다.</p>
+
+        <div id="status-msg"></div>
+
+        <form id="project-form" class="form-card">
+            <div class="form-group">
+                <label>프로젝트 제목 <span class="req">*</span></label>
+                <input type="text" id="title" placeholder="예: 궁동 Co-Housing" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>저자 / 작성자 <span class="req">*</span></label>
+                    <input type="text" id="author" placeholder="예: 홍길동 (2026 Archiving)" required>
+                </div>
+                <div class="form-group">
+                    <label>제작 연도</label>
+                    <input type="text" id="year" placeholder="2026" value="2026">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>구분 (카테고리)</label>
+                    <select id="category" onchange="toggleGradeSelect(this.value)">
+                        <option value="studio">정규 스튜디오 (Studio)</option>
+                        <option value="competition">공모전 (Competition)</option>
+                        <option value="other">기타 (Other)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grade-group">
+                    <label>학년</label>
+                    <select id="grade">
+                        <option value="1">1학년 (Year 1)</option>
+                        <option value="2">2학년 (Year 2)</option>
+                        <option value="3" selected>3학년 (Year 3)</option>
+                        <option value="4">4학년 (Year 4)</option>
+                        <option value="5">5학년 (Year 5)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="semester-group">
+                    <label>학기</label>
+                    <select id="semester">
+                        <option value="1" selected>1학기 (Semester 1)</option>
+                        <option value="2">2학기 (Semester 2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>건축 유형 (Type)</label>
+                <input type="text" id="type" placeholder="예: Residential, Commercial, Pavilion, Urban Design 등">
+            </div>
+
+            <div class="form-group">
+                <label>메인 대표 썸네일 이미지 <span class="req">*</span></label>
+                <input type="file" id="thumbnail-file" accept="image/*" required>
+                <div class="file-hint">메인 갤러리 그리드에 표시될 대표 1장입니다. (JPG, PNG, WebP)</div>
+            </div>
+
+            <div class="form-group">
+                <label>상세 패널 / 도면 / 추가 이미지들 (다중 선택 가능)</label>
+                <input type="file" id="detail-files" accept="image/*" multiple>
+                <div class="file-hint">상세 페이지 하단에 순서대로 표시될 이미지들입니다. (Ctrl 또는 Shift 누르고 여러 장 선택)</div>
+            </div>
+
+            <div class="form-group">
+                <label>프로젝트 설명</label>
+                <textarea id="description" placeholder="프로젝트 기획 의도, 컨셉, 대지 분석 등의 설명을 입력해주세요. (줄바꿈 지원)"></textarea>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-submit">Supabase DB에 등록하기</button>
+        </form>
+
+        <div class="migration-box">
+            <h3 style="margin-top:0;">💡 기존 샘플 데이터 옮기기</h3>
+            <p style="font-size:14px; color:#666;">기존 <code>projects.js</code>에 들어있던 1~7번 샘플 데이터를 Supabase DB에 일괄 복사합니다.</p>
+            <button type="button" class="migration-btn" onclick="migrateInitialData()">기존 7개 프로젝트 DB로 이전하기</button>
+        </div>
+    </main>
+
+    <!-- Supabase JS 라이브러리 및 클라이언트 연동 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="projects.js"></script>
+
+    <script>
+        function toggleGradeSelect(category) {
+            const gradeGroup = document.getElementById('grade-group');
+            const semesterGroup = document.getElementById('semester-group');
+            if (category === 'studio') {
+                gradeGroup.style.display = 'block';
+                semesterGroup.style.display = 'block';
+            } else {
+                gradeGroup.style.display = 'none';
+                semesterGroup.style.display = 'none';
+            }
+        }
+
+        function showStatus(text, type) {
+            const msg = document.getElementById('status-msg');
+            msg.className = '';
+            msg.classList.add('status-' + type);
+            msg.style.display = 'block';
+            msg.innerHTML = text;
+        }
+
+        // 💡 고성능 클라이언트 자동 이미지 압축 & WebP 변환 함수 (용량 90~95% 절감)
+        async function compressImage(file, maxDimension = 2000, quality = 0.82) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        // 최대 해상도 비율 맞추기 (건축 도면/판넬 비율 유지)
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        // 부드러운 이미지 축소 필터링
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // 차세대 웹 포맷 WebP로 압축 (호환성 없을 시 JPEG 폴백)
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                resolve(file); // 압축 실패 시 원본 사용
+                                return;
+                            }
+                            const compressedFile = new File([blob], `${file.name.replace(/\.[^/.]+$/, "")}.webp`, {
+                                type: 'image/webp',
+                                lastModified: Date.now()
+                            });
+                            console.log(`압축 완료: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024).toFixed(1)}KB`);
+                            resolve(compressedFile);
+                        }, 'image/webp', quality);
+                    };
+                    img.onerror = (err) => reject(err);
+                };
+                reader.onerror = (err) => reject(err);
+            });
+        }
+
+        // 이미지 파일 업로드 유틸 함수 (Storage bucket: 'project-images')
+        async function uploadImage(file, maxDimension = 2000) {
+            // 업로드 전 자동 압축 실행
+            const compressedFile = await compressImage(file, maxDimension);
+            
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.webp`;
+            const filePath = `uploads/${fileName}`;
+
+            const { data, error } = await supabaseClient.storage
+                .from('project-images')
+                .upload(filePath, compressedFile, {
+                    contentType: 'image/webp',
+                    cacheControl: '31536000' // 1년 브라우저 캐싱으로 재방문 시 즉각 로딩
+                });
+
+            if (error) throw error;
+
+            // 공개 URL 가져오기
+            const { data: { publicUrl } } = supabaseClient.storage
+                .from('project-images')
+                .getPublicUrl(filePath);
+
+            return publicUrl;
+        }
+
+        // 폼 제출 이벤트
+        document.getElementById('project-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+
+            try {
+                submitBtn.disabled = true;
+                showStatus('⏳ 이미지를 최적화 압축하는 중입니다... 잠시만 기다려주세요.', 'loading');
+
+                const title = document.getElementById('title').value.trim();
+                const author = document.getElementById('author').value.trim();
+                const year = document.getElementById('year').value.trim() || '2026';
+                const category = document.getElementById('category').value;
+                const grade = category === 'studio' ? parseInt(document.getElementById('grade').value) : 0;
+                const semester = category === 'studio' ? parseInt(document.getElementById('semester').value) : 0;
+                const type = document.getElementById('type').value.trim() || 'Architecture';
+                const description = document.getElementById('description').value.trim().replace(/\n/g, '<br>');
+
+                // 1. 썸네일 업로드 (갤러리용이므로 가로 1200px로 더욱 가볍게 최적화)
+                const thumbFile = document.getElementById('thumbnail-file').files[0];
+                if (!thumbFile) throw new Error("대표 썸네일 이미지를 선택해주세요.");
+                showStatus('⏳ 썸네일 이미지 압축 및 전송 중...', 'loading');
+                const thumbnailUrl = await uploadImage(thumbFile, 1200);
+
+                // 2. 상세 이미지들 업로드 (판넬 상세용이므로 2000px 유지 고화질 압축)
+                const detailFiles = document.getElementById('detail-files').files;
+                const detailImages = [];
+                for (let i = 0; i < detailFiles.length; i++) {
+                    showStatus(`⏳ 상세 이미지 최적화 및 업로드 중 (${i + 1}/${detailFiles.length})...`, 'loading');
+                    const url = await uploadImage(detailFiles[i], 2000);
+                    detailImages.push(url);
+                }
+
+                // 3. projects 테이블에 INSERT
+                showStatus('⏳ 데이터베이스에 프로젝트 레코드를 저장하고 있습니다...', 'loading');
+                const { data, error } = await supabaseClient
+                    .from('projects')
+                    .insert([{
+                        title,
+                        author,
+                        year,
+                        grade,
+                        semester,
+                        category,
+                        type,
+                        thumbnail: thumbnailUrl,
+                        detail_images: detailImages,
+                        description
+                    }])
+                    .select();
+
+                if (error) throw error;
+
+                showStatus(`✅ 프로젝트가 성공적으로 등록되었습니다! <a href="main.html" style="color:inherit; font-weight:bold; text-decoration:underline;">메인 화면에서 확인하기</a>`, 'success');
+                document.getElementById('project-form').reset();
+
+            } catch (err) {
+                console.error(err);
+                showStatus(`❌ 등록 중 오류가 발생했습니다: ${err.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 기존 7개 샘플 데이터 마이그레이션 함수
+        async function migrateInitialData() {
+            if (!confirm("기존 projects.js의 7개 샘플 데이터를 Supabase 데이터베이스로 이전하시겠습니까?")) return;
+
+            try {
+                showStatus('⏳ 샘플 데이터를 Supabase로 전송 중입니다...', 'loading');
+
+                const records = projectsData.map(p => ({
+                    title: p.title,
+                    author: p.author,
+                    year: p.year,
+                    grade: p.grade,
+                    semester: p.semester,
+                    category: p.category,
+                    type: p.type,
+                    thumbnail: p.thumbnail,
+                    detail_images: p.detailImages,
+                    description: p.description
+                }));
+
+                const { data, error } = await supabaseClient
+                    .from('projects')
+                    .insert(records);
+
+                if (error) throw error;
+
+                showStatus('🎉 7개의 샘플 프로젝트가 Supabase DB로 성공적으로 복사되었습니다! <a href="main.html" style="color:inherit; font-weight:bold; text-decoration:underline;">메인 화면 보기</a>', 'success');
+            } catch (err) {
+                console.error(err);
+                showStatus(`❌ 데이터 이전 중 오류 발생: ${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

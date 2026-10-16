@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAA! Plant - Projects</title>
+    <style>
+        /* 💡 프리텐다드 폰트 및 기본 설정 */
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+        body { margin: 0; padding: 0; font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa; color: #222; line-height: 1.6; letter-spacing: -0.3px; }
+
+        /* 💡 공통 헤더 및 투명 모자이크 메뉴 (다른 페이지와 100% 동일) */
+        header { position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background-color: #f8f9fa; border-bottom: 1px solid #dcdcdc; }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
+
+        .dropdown { position: relative; display: inline-block; padding-bottom: 10px; }
+        .dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background-color: rgba(180, 180, 180, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); min-width: 140px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; }
+        .dropdown:hover .dropdown-menu { display: block; }
+        .dropdown-submenu { position: relative; }
+        .dropdown-menu a { display: flex; justify-content: center; align-items: center; padding: 12px 20px; color: #222; text-decoration: none; font-size: 15px; font-weight: 500; transition: transform 0.3s ease; background-color: transparent; }
+        .dropdown-menu a:hover, .dropdown-submenu:hover > a { background-color: transparent; font-weight: bold; transform: scale(1.15); }
+        .submenu { display: none; position: absolute; top: -1px; left: 100%; background-color: rgba(180, 180, 180, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); min-width: 120px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; }
+        .dropdown-submenu:hover .submenu { display: block; }
+
+        /* 💡 갤러리 그리드 스타일 */
+        .gallery-container { padding: 140px 60px 60px 60px; max-width: 1800px; margin: 0 auto; }
+        .grid-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+        .project-card { position: relative; aspect-ratio: 4 / 3; background-color: #e9ecef; overflow: hidden; cursor: pointer; border-radius: 4px; }
+        .project-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.65); opacity: 0; transition: opacity 0.4s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
+        .project-card:hover .overlay { opacity: 1; }
+        .project-card:hover .project-image { transform: scale(1.05); }
+        .project-title { font-size: 20px; margin: 0 0 10px 0; letter-spacing: 0.5px; transform: translateY(15px); transition: transform 0.4s ease; }
+        .project-author { font-size: 14px; color: #ddd; margin: 0; transform: translateY(15px); transition: transform 0.4s ease; transition-delay: 0.05s; }
+        .project-card:hover .project-title, .project-card:hover .project-author { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="main.html" class="logo">PLANT</a>
+        <nav class="nav-links">
+            <div class="dropdown">
+                <a href="main.html" class="active">Project</a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-submenu"><a href="main.html?grade=1">Year 1</a><ul class="submenu"><li><a href="main.html?grade=1&semester=1">Semester 1</a></li><li><a href="main.html?grade=1&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=2">Year 2</a><ul class="submenu"><li><a href="main.html?grade=2&semester=1">Semester 1</a></li><li><a href="main.html?grade=2&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=3">Year 3</a><ul class="submenu"><li><a href="main.html?grade=3&semester=1">Semester 1</a></li><li><a href="main.html?grade=3&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=4">Year 4</a><ul class="submenu"><li><a href="main.html?grade=4&semester=1">Semester 1</a></li><li><a href="main.html?grade=4&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=5">Year 5</a><ul class="submenu"><li><a href="main.html?grade=5&semester=1">Semester 1</a></li><li><a href="main.html?grade=5&semester=2">Semester 2</a></li></ul></li>
+                    
+                    <li style="border-top: 1px solid rgba(0,0,0,0.1); margin: 5px 10px;"></li>
+                    <li><a href="main.html?category=competition">Competition</a></li>
+                    <li><a href="main.html?category=other">Other</a></li>
+                </ul>
+            </div>
+            <a href="info.html">Info</a>
+            <a href="contact.html">Contact</a>
+        </nav>
+    </header>
+
+    <main class="gallery-container">
+        <div class="grid-wrapper" id="project-grid">
+            <p style="grid-column: 1 / -1; text-align: center; color: #777; font-size: 16px; padding: 100px 0;">프로젝트 목록을 불러오는 중입니다...</p>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 60px 20px 40px; font-size: 13px; color: #aaa; letter-spacing: 0.5px;">
+        <p style="margin: 0;">© PLANT. All rights reserved. <a href="admin.html" style="color: inherit; text-decoration: none; opacity: 0.6; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Admin</a></p>
+    </footer>
+
+    <!-- Supabase JS & 로컬 설정 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="projects.js"></script>
+
+    <script>
+        async function loadProjects() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const gradeFilter = urlParams.get('grade');
+            const semesterFilter = urlParams.get('semester');
+            const categoryFilter = urlParams.get('category');
+
+            const grid = document.getElementById('project-grid');
+            let displayProjects = [];
+
+            try {
+                // 1. Supabase DB에서 조회 시도
+                if (supabaseClient) {
+                    let query = supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
+
+                    if (gradeFilter) {
+                        query = query.eq('grade', parseInt(gradeFilter));
+                    }
+                    if (semesterFilter) {
+                        query = query.eq('semester', parseInt(semesterFilter));
+                    }
+                    if (categoryFilter) {
+                        query = query.eq('category', categoryFilter);
+                    }
+
+                    const { data, error } = await query;
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        displayProjects = data;
+                    }
+                }
+            } catch (err) {
+                console.warn("Supabase 데이터 조회 실패, 로컬 백업 데이터를 사용합니다:", err);
+            }
+
+            // 2. 만약 Supabase DB가 비어있거나 연결 전이면 로컬 projectsData로 폴백 표시
+            if (displayProjects.length === 0 && (!supabaseClient || displayProjects.length === 0)) {
+                let fallback = projectsData;
+                if (gradeFilter) {
+                    fallback = fallback.filter(p => p.grade === parseInt(gradeFilter));
+                }
+                if (semesterFilter) {
+                    fallback = fallback.filter(p => p.semester === parseInt(semesterFilter));
+                }
+                if (categoryFilter) {
+                    fallback = fallback.filter(p => p.category === categoryFilter);
+                }
+                displayProjects = fallback;
+            }
+
+            // 3. 화면 렌더링
+            grid.innerHTML = '';
+            if (displayProjects.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777; font-size: 18px; padding: 100px 0;">해당 카테고리에 등록된 프로젝트가 없습니다.</p>';
+            } else {
+                displayProjects.forEach(project => {
+                    const cardHTML = `
+                        <div class="project-card" onclick="location.href='project_detail.html?id=${project.id}'">
+                            <img src="${project.thumbnail}" alt="${project.title}" class="project-image">
+                            <div class="overlay">
+                                <h3 class="project-title">${project.title}</h3>
+                                <p class="project-author">${project.author}</p>
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += cardHTML;
+                });
+            }
+        }
+
+        loadProjects();
+    </script>
+</body>
+</html>

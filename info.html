@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAA! Plant - Info</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+        body { margin: 0; padding: 0; font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa; color: #222; line-height: 1.6; letter-spacing: -0.3px; }
+        
+        header { position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background-color: #f8f9fa; border-bottom: 1px solid #dcdcdc; }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
+
+        .dropdown { position: relative; display: inline-block; padding-bottom: 10px; }
+        .dropdown-menu { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background-color: rgba(180, 180, 180, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); min-width: 140px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; }
+        .dropdown:hover .dropdown-menu { display: block; }
+        .dropdown-submenu { position: relative; }
+        .dropdown-menu a { display: flex; justify-content: center; align-items: center; padding: 12px 20px; color: #222; text-decoration: none; font-size: 15px; font-weight: 500; transition: transform 0.3s ease; background-color: transparent; }
+        .dropdown-menu a:hover, .dropdown-submenu:hover > a { background-color: transparent; font-weight: bold; transform: scale(1.15); }
+        .submenu { display: none; position: absolute; top: -1px; left: 100%; background-color: rgba(180, 180, 180, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); min-width: 120px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; }
+        .dropdown-submenu:hover .submenu { display: block; }
+
+        .info-container { padding: 180px 60px 100px 60px; width: 1000px; margin: 0 auto; }
+        .section-title { font-size: 28px; font-weight: bold; letter-spacing: -1px; color: #111; margin-bottom: 50px; border-left: 4px solid #111; padding-left: 15px; }
+        .management-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-bottom: 120px; }
+        .management-card { text-align: center; }
+        .management-photo-holder { width: 100%; aspect-ratio: 1 / 1; margin-bottom: 20px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .management-photo { width: 100%; height: 100%; object-fit: cover; background-color: #eee; }
+        .management-info { font-size: 16px; color: #111; letter-spacing: 0.5px; font-weight: 500; }
+        
+        /* 💡 조직도 부분: 선을 없애고 여백만으로 깔끔하게 변경했습니다 */
+        .org-chart-container { padding: 20px 0; }
+        .org-chart-title { font-size: 20px; font-weight: bold; margin: 0; text-align: center; margin-bottom: 40px; color: #111; }
+        .bureau-grid { display: flex; width: 100%; }
+        .bureau-box { flex: 1; text-align: center; }
+        .bureau-box h3 { font-size: 18px; margin: 0 0 20px 0; font-weight: bold; color: #111; }
+        .member-list { font-size: 15px; line-height: 2; color: #555; list-style: none; padding: 0; margin: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="main.html" class="logo">PLANT</a>
+        <nav class="nav-links">
+            <div class="dropdown">
+                <a href="main.html">Project</a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-submenu"><a href="main.html?grade=1">Year 1</a> <ul class="submenu"><li><a href="main.html?grade=1&semester=1">Semester 1</a></li><li><a href="main.html?grade=1&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=2">Year 2</a><ul class="submenu"><li><a href="main.html?grade=2&semester=1">Semester 1</a></li><li><a href="main.html?grade=2&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=3">Year 3</a><ul class="submenu"><li><a href="main.html?grade=3&semester=1">Semester 1</a></li><li><a href="main.html?grade=3&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=4">Year 4</a><ul class="submenu"><li><a href="main.html?grade=4&semester=1">Semester 1</a></li><li><a href="main.html?grade=4&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=5">Year 5</a><ul class="submenu"><li><a href="main.html?grade=5&semester=1">Semester 1</a></li><li><a href="main.html?grade=5&semester=2">Semester 2</a></li></ul></li>
+                    <li style="border-top: 1px solid rgba(0,0,0,0.1); margin: 5px 10px;"></li>
+                    <li><a href="main.html?category=competition">Competition</a></li>
+                    <li><a href="main.html?category=other">Other</a></li>
+                </ul>
+            </div>
+            <a href="info.html" class="active">Info</a>
+            <a href="contact.html">Contact</a>
+        </nav>
+    </header>
+
+    <main class="info-container">
+        <h2 class="section-title">MANAGEMENT TEAM</h2>
+        <div class="management-grid">
+            <div class="management-card"><div class="management-photo-holder"><img src="images/kmj profile.jpg" alt="" class="management-photo"></div><div class="management-info">김명재</div></div>
+            <div class="management-card"><div class="management-photo-holder"><img src="" alt="" class="management-photo"></div><div class="management-info">박지선</div></div>
+            <div class="management-card"><div class="management-photo-holder"><img src="images/csh profile.jpg" alt="" class="management-photo"></div><div class="management-info">최수호</div></div>
+        </div>
+
+        
+        <div class="org-chart-container">
+            <h3 class="org-chart-title">YAA!</h3>
+            <div class="bureau-grid">
+                <div class="bureau-box"><h3>기획국</h3><ul class="member-list"><li>오지은</li><li>김예진</li><li>박수민</li><li>정성운</li></ul></div>
+                <div class="bureau-box"><h3>관리국</h3><ul class="member-list"><li>김명재</li><li>박지선</li><li>최수호</li></ul></div>
+                <div class="bureau-box"><h3>홍보국</h3><ul class="member-list"><li>명수아</li><li>김지우</li><li>이솔희</li><li>이연우</li><li>이규영</li><li>김가현</li><li>이현서</li></ul></div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 60px 20px 40px; font-size: 13px; color: #aaa; letter-spacing: 0.5px;">
+        <p style="margin: 0;">© PLANT. All rights reserved. <a href="admin.html" style="color: inherit; text-decoration: none; opacity: 0.6; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Admin</a></p>
+    </footer>
+</body>
+</html>

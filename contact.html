@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAA! Plant - Submit</title>
+    <style>
+        /* 💡 1. 프리텐다드 웹 폰트 불러오기 */
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+        /* 💡 2. 기본 여백 및 폰트 설정 교체 */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background-color: #f8f9fa; 
+            color: #222; 
+            line-height: 1.6; 
+            letter-spacing: -0.3px; 
+        }
+
+        /* ========================================= */
+        /* 공통 헤더 & 내비게이션 스타일 */
+        /* ========================================= */
+        header { 
+            position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; 
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000; 
+            background-color: #f8f9fa; border-bottom: 1px solid #dcdcdc; 
+        }
+        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
+
+        /* --- 드롭다운 & 모자이크 효과 --- */
+        .dropdown { position: relative; display: inline-block; padding-bottom: 10px; }
+        
+        /* 💡 투명한 모자이크 배경 설정 */
+        .dropdown-menu { 
+            display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); 
+            background-color: rgba(180, 180, 180, 0.4); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            min-width: 140px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); 
+            padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; 
+        }
+        .dropdown:hover .dropdown-menu { display: block; }
+        .dropdown-submenu { position: relative; }
+        
+        .dropdown-menu a { 
+            display: flex; justify-content: center; align-items: center; padding: 12px 20px; 
+            color: #222; text-decoration: none; font-size: 15px; font-weight: 500; 
+            transition: transform 0.3s ease; background-color: transparent; 
+        }
+        
+        .dropdown-menu a:hover, .dropdown-submenu:hover > a { 
+            background-color: transparent; font-weight: bold; transform: scale(1.15); 
+        }
+        
+        .submenu { 
+            display: none; position: absolute; top: -1px; left: 100%; 
+            background-color: rgba(180, 180, 180, 0.4); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            min-width: 120px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); 
+            padding: 10px 0; margin: 0; list-style: none; border-radius: 8px; 
+        }
+        .dropdown-submenu:hover .submenu { display: block; }
+
+        /* ========================================= */
+        /* Submit 페이지 메인 콘텐츠 스타일 */
+        /* ========================================= */
+        .submit-container { padding: 180px 60px 100px 60px; max-width: 800px; margin: 0 auto; }
+        .page-header { margin-bottom: 80px; }
+        .page-header h1 { font-size: 42px; font-weight: bold; letter-spacing: -1px; margin: 0 0 20px 0; color: #111; }
+        .page-header p { font-size: 18px; color: #555; margin: 0; word-break: keep-all; }
+
+        .guide-step { border-top: 2px solid #111; padding-top: 30px; margin-bottom: 60px; }
+        .guide-step h2 { font-size: 20px; font-weight: bold; margin: 0 0 20px 0; color: #111; display: flex; align-items: center; gap: 10px; }
+        
+        .step-number { font-size: 14px; background-color: #111; color: #fff; padding: 4px 10px; border-radius: 20px; font-weight: normal; }
+        .guide-step p { font-size: 16px; color: #444; margin-bottom: 20px; word-break: keep-all; }
+        .guide-step ul { padding-left: 20px; margin-bottom: 20px; color: #444; }
+        .guide-step ul li { margin-bottom: 10px; }
+
+        .info-box { background-color: #e9ecef; padding: 20px 25px; border-left: 4px solid #111; font-size: 15px; color: #222; margin-top: 20px; }
+
+        .submit-btn { display: inline-block; margin-top: 20px; padding: 15px 40px; background-color: #111; color: #fff; text-decoration: none; font-size: 16px; font-weight: bold; letter-spacing: 1px; transition: background-color 0.3s ease; }
+        .submit-btn:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+
+   <header>
+        <a href="main.html" class="logo">PLANT</a>
+        <nav class="nav-links">
+            
+            <div class="dropdown">
+                <a href="main.html">Project</a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-submenu">
+                        <a href="main.html?grade=1">Year 1</a> 
+                        <ul class="submenu">
+                            <li><a href="main.html?grade=1&semester=1">Semester 1</a></li>
+                            <li><a href="main.html?grade=1&semester=2">Semester 2</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=2">Year 2</a><ul class="submenu"><li><a href="main.html?grade=2&semester=1">Semester 1</a></li><li><a href="main.html?grade=2&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=3">Year 3</a><ul class="submenu"><li><a href="main.html?grade=3&semester=1">Semester 1</a></li><li><a href="main.html?grade=3&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=4">Year 4</a><ul class="submenu"><li><a href="main.html?grade=4&semester=1">Semester 1</a></li><li><a href="main.html?grade=4&semester=2">Semester 2</a></li></ul></li>
+                    <li class="dropdown-submenu"><a href="main.html?grade=5">Year 5</a><ul class="submenu"><li><a href="main.html?grade=5&semester=1">Semester 1</a></li><li><a href="main.html?grade=5&semester=2">Semester 2</a></li></ul></li>
+
+                    <li style="border-top: 1px solid rgba(0,0,0,0.1); margin: 5px 10px;"></li>
+                    <li><a href="main.html?category=competition">Competition</a></li>
+                    <li><a href="main.html?category=other">Other</a></li>
+                </ul>
+            </div>
+
+            <a href="info.html">Info</a>
+            <a href="contact.html" class="active">Contact</a>
+        </nav>
+    </header>
+
+    <main class="submit-container">
+        <div class="page-header">
+            <h1>Submit Your Work.</h1>
+            <p>YAA! Plant는 여러분의 치열한 고민이 담긴 설계 프로젝트를 기다립니다. 아래의 제출 양식에 맞춰 작품을 보내주시면, 아카이빙 사이트에 업로드됩니다.</p>
+        </div>
+
+        <div class="guide-step">
+            <h2><span class="step-number">01</span> 제출 대상 및 일정</h2>
+            <p>충남대학교 건축학과 재학생 및 졸업생의 모든 건축/공간 설계 프로젝트를 대상으로 합니다. 학기 중 진행한 마감작, 공모전 출품작, 개인 스터디 등 형식에 구애받지 않습니다.</p>
+            <ul>
+                <li><strong>상시 접수:</strong> 연중 언제나 제출 가능합니다.</li>
+                <li><strong>업로드 주기:</strong> 매주 업데이트 됩니다.</li>
+            </ul>
+        </div>
+
+        <div class="guide-step">
+            <h2><span class="step-number">02</span> 제출 양식</h2>
+            <p>작품이 가장 돋보일 수 있도록 아래의 규격을 지켜주시기 바랍니다. 이미지와 텍스트를 하나의 압축 파일로 묶어서 제출해 주세요.</p>
+            <ul>
+                <li><strong>메인 썸네일 (1장)</strong> </li>
+                <li><strong>프로젝트 이미지 (최대 10장):</strong> 투시도, 평·입·단면도, 다이어그램 등 (자유 비율)</li>
+                <li><strong>프로젝트 설명글 (Word 또는 TXT):</strong> 프로젝트 제목, 제작 연도, 참여자 이름, 그리고 500자 내외의 작품 설명</li>
+            </ul>
+            <div class="info-box">
+                <strong>📌 압축 파일명 작성 규칙</strong><br>
+                [제출연도]_[참여자이름]_[프로젝트제목].zip<br>
+                <em>예시: 2026_홍길동_궁동_Co_Housing.zip</em>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <h2><span class="step-number">03</span> 제출 및 문의</h2>
+            <p>준비된 압축 파일을 아래의 YAA! Plant 공식 이메일로 발송해 주세요. 이메일 제목은 압축 파일명과 동일하게 작성해 주시면 분류에 큰 도움이 됩니다. 기타 아카이빙 관련 문의사항도 해당 메일로 편하게 남겨주세요.</p>
+            <a href="mailto:yaaplant.archive@gmail.com" class="submit-btn">이메일로 작품 제출하기</a>
+        </div>
+    </main>
+
+    <footer style="text-align: center; padding: 60px 20px 40px; font-size: 13px; color: #aaa; letter-spacing: 0.5px;">
+        <p style="margin: 0;">© PLANT. All rights reserved. <a href="admin.html" style="color: inherit; text-decoration: none; opacity: 0.6; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Admin</a></p>
+    </footer>
+</body>
+</html>
