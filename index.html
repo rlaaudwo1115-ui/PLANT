@@ -11,11 +11,9 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #111;
-            font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #111; /* 다크 배경 */
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* 모던 폰트 */
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
 
         #intro-svg {
@@ -23,67 +21,62 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%); 
-            animation: rotateText 120s linear infinite; 
-            will-change: transform;
         }
 
-        @keyframes rotateText {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+        /* 링 그룹 회전 애니메이션 */
+        @keyframes spinCW {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spinCCW {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        .ring-group {
+            transform-origin: 0px 0px; /* SVG 원점 (0,0) 기준 회전 */
+            pointer-events: visiblePainted; /* 글자와 투명 패스 위 마우스 호버 정확히 감지 */
+            cursor: pointer;
         }
 
         .text-ring {
-            fill: #ffffff;
-            font-weight: 700;
-            letter-spacing: -0.5px; 
+            fill: #ffffff; /* 흰색 글자 */
+            font-weight: bold;
+            letter-spacing: -1px; 
             dominant-baseline: middle; 
             text-anchor: middle;
+            transition: fill 0.3s ease;
         }
 
-        /* 모바일/PC 공통 터치 안내 */
-        .enter-hint {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.45);
-            font-size: 13px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 400;
-            pointer-events: none;
-            animation: pulseHint 2s infinite ease-in-out;
-            white-space: nowrap;
-        }
-
-        @keyframes pulseHint {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+        /* 호버 시 해당 링 살짝 강조 (선택사항) */
+        .ring-group:hover .text-ring {
+            fill: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
 <body>
 
     <div id="intro-container"></div>
-    <div class="enter-hint">Tap anywhere to enter</div>
 
     <script>
         const container = document.getElementById('intro-container');
-        const textWord = "PLANT"; 
+        // 기본 텍스트와 호버 시 변경될 텍스트
+        const defaultWord = "YAA!_Plant"; 
+        const hoverWord = "WELCOME";
+        
+        // 등차수열 세팅
+        const startGap = 50;     // 초항 (중심부 첫 번째 간격)
+        const gapIncrease = 20;  // 공차 (바깥으로 갈수록 늘어나는 폭)
 
         function drawRings() {
             container.innerHTML = ''; 
             
             const width = window.innerWidth;
             const height = window.innerHeight;
-            const minScreen = Math.min(width, height);
-            
-            // 모바일 화면 폭에 맞춰 시작 갭과 증가율 동적 계산
-            const isMobile = width <= 768;
-            const startGap = isMobile ? Math.max(26, Math.floor(minScreen * 0.08)) : 50;
-            const gapIncrease = isMobile ? Math.max(10, Math.floor(minScreen * 0.035)) : 20;
-
-            const maxRadius = Math.ceil(Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2))) + 40;
+            // 화면 중심에서 모서리까지의 대각선 길이 계산
+            const maxRadius = Math.ceil(Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2)));
 
             const svgNS = "http://www.w3.org/2000/svg";
             const svg = document.createElementNS(svgNS, "svg");
@@ -100,28 +93,61 @@
                 currentRadius += currentGap; 
                 const pathId = `ring-path-${i}`;
                 
+                // 💡 핵심: 궤도와 글자를 한 쌍으로 담을 독립 그룹 <g> 생성
+                const group = document.createElementNS(svgNS, "g");
+                group.setAttribute("class", "ring-group");
+
+                // 🎲 회전 방향(시계 vs 반시계) 완전 랜덤
+                const isClockwise = Math.random() < 0.5;
+                const animName = isClockwise ? 'spinCW' : 'spinCCW';
+
+                // ⚡ 속도 편차 극대화: 빠른 링(35초)부터 아주 느긋한 링(165초)까지 넓은 스펙트럼 부여
+                const randomSpeed = Math.floor(35 + Math.random() * 130); 
+                group.style.animation = `${animName} ${randomSpeed}s linear infinite`;
+                
+                // 원형 궤도 그리기 (마우스 호버 감지를 위해 투명한 스트로크 히트박스 부여)
                 const path = document.createElementNS(svgNS, "path");
                 path.setAttribute("d", `M 0, -${currentRadius} A ${currentRadius},${currentRadius} 0 1,1 0,${currentRadius} A ${currentRadius},${currentRadius} 0 1,1 0,-${currentRadius}`);
                 path.id = pathId;
                 path.setAttribute("fill", "none");
-                svg.appendChild(path);
+                path.setAttribute("stroke", "transparent");
+                path.setAttribute("stroke-width", `${currentGap * 1.2}px`); // 마우스 호버 영역을 링 너비만큼 확장
+                group.appendChild(path);
 
+                // 글자 얹기
                 const textElem = document.createElementNS(svgNS, "text");
                 textElem.setAttribute("class", "text-ring");
-                textElem.setAttribute("font-size", `${currentGap * 1.05}px`); 
+                textElem.setAttribute("font-size", `${currentGap * 1.2}px`); 
 
                 const textPath = document.createElementNS(svgNS, "textPath");
                 textPath.setAttribute("href", `#${pathId}`);
                 
                 const circumference = 2 * Math.PI * currentRadius;
-                const charWidthGuess = currentGap * 0.55; 
-                const wordLengthGuess = (textWord.length + 1) * charWidthGuess;
-                const repeatCount = Math.ceil(circumference / wordLengthGuess) * 2; 
+                const charWidthGuess = currentGap * 0.5; 
+                
+                // 기본 단어 및 호버 단어의 반복 횟수 계산
+                const defaultCount = Math.ceil(circumference / (defaultWord.length * charWidthGuess)) * 2;
+                const hoverCount = Math.ceil(circumference / (hoverWord.length * charWidthGuess)) * 2;
 
-                textPath.textContent = (textWord + "\u00A0\u00A0").repeat(repeatCount);
+                const defaultTextContent = (defaultWord + "\u00A0").repeat(defaultCount);
+                const hoverTextContent = (hoverWord + "\u00A0\u00A0").repeat(hoverCount);
+
+                // 초기 상태는 기본 단어
+                textPath.textContent = defaultTextContent;
+
+                // 🎯 마우스 호버 시 실시간으로 WELCOME 교체 이벤트
+                group.addEventListener('mouseenter', () => {
+                    textPath.textContent = hoverTextContent;
+                });
+                group.addEventListener('mouseleave', () => {
+                    textPath.textContent = defaultTextContent;
+                });
 
                 textElem.appendChild(textPath);
-                svg.appendChild(textElem);
+                group.appendChild(textElem);
+
+                // 완성된 링 그룹을 SVG에 추가
+                svg.appendChild(group);
 
                 currentGap += gapIncrease; 
                 i++;

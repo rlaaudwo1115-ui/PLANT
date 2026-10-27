@@ -192,7 +192,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>저자 / 작성자 <span class="req">*</span></label>
-                    <input type="text" id="author" placeholder="예: 홍길동 (2026 Archiving)" required>
+                    <input type="text" id="author" placeholder="예: 김명재" required>
                 </div>
                 <div class="form-group">
                     <label>제작 연도</label>
@@ -230,7 +230,7 @@
 
             <div class="form-group">
                 <label>건축 유형 (Type)</label>
-                <input type="text" id="type" placeholder="예: Residential, Commercial, Pavilion, Urban Design 등">
+                <input type="text" id="type" placeholder="예: 소공간, 종교시설, MXD 등">
             </div>
 
             <div class="form-group">
@@ -253,10 +253,10 @@
             <button type="submit" id="submit-btn" class="btn-submit">Supabase DB에 등록하기</button>
         </form>
 
-        <div class="migration-box">
-            <h3 style="margin-top:0;">💡 기존 샘플 데이터 옮기기</h3>
-            <p style="font-size:14px; color:#666;">기존 <code>projects.js</code>에 들어있던 1~7번 샘플 데이터를 Supabase DB에 일괄 복사합니다.</p>
-            <button type="button" class="migration-btn" onclick="migrateInitialData()">기존 7개 프로젝트 DB로 이전하기</button>
+        <div class="migration-box" style="border: 1px dashed #e53e3e; background: #fff5f5;">
+            <h3 style="margin-top:0; color: #c53030;">🗑️ DB 등록 데이터 전체 초기화</h3>
+            <p style="font-size:14px; color:#742a2a;">Supabase 데이터베이스에 등록된 모든 프로젝트 레코드를 비웁니다.</p>
+            <button type="button" class="migration-btn" style="background-color: #e53e3e;" onclick="clearAllProjects()">모든 프로젝트 DB 데이터 삭제하기</button>
         </div>
     </main>
 
@@ -428,36 +428,24 @@
             }
         });
 
-        // 기존 7개 샘플 데이터 마이그레이션 함수
-        async function migrateInitialData() {
-            if (!confirm("기존 projects.js의 7개 샘플 데이터를 Supabase 데이터베이스로 이전하시겠습니까?")) return;
+        // Supabase DB 전체 프로젝트 삭제 함수
+        async function clearAllProjects() {
+            if (!confirm("⚠️ 정말로 데이터베이스의 모든 프로젝트를 삭제하시겠습니까? (되돌릴 수 없습니다)")) return;
 
             try {
-                showStatus('⏳ 샘플 데이터를 Supabase로 전송 중입니다...', 'loading');
-
-                const records = projectsData.map(p => ({
-                    title: p.title,
-                    author: p.author,
-                    year: p.year,
-                    grade: p.grade,
-                    semester: p.semester,
-                    category: p.category,
-                    type: p.type,
-                    thumbnail: p.thumbnail,
-                    detail_images: p.detailImages,
-                    description: p.description
-                }));
+                showStatus('⏳ 데이터베이스의 프로젝트들을 삭제하는 중입니다...', 'loading');
 
                 const { data, error } = await supabaseClient
                     .from('projects')
-                    .insert(records);
+                    .delete()
+                    .neq('id', 0); // 모든 id를 가진 행 삭제
 
                 if (error) throw error;
 
-                showStatus('🎉 7개의 샘플 프로젝트가 Supabase DB로 성공적으로 복사되었습니다! <a href="main.html" style="color:inherit; font-weight:bold; text-decoration:underline;">메인 화면 보기</a>', 'success');
+                showStatus('🗑️ 모든 프로젝트 데이터가 삭제되었습니다. 이제 새로운 작품들을 등록할 수 있습니다.', 'success');
             } catch (err) {
                 console.error(err);
-                showStatus(`❌ 데이터 이전 중 오류 발생: ${err.message}`, 'error');
+                showStatus(`❌ 삭제 중 오류 발생: ${err.message}`, 'error');
             }
         }
     </script>
