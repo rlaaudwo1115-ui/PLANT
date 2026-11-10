@@ -73,6 +73,25 @@ on public.projects for delete
 to authenticated
 using (public.is_admin());
 
+-- 3-1. 관리자 페이지에서 추가한 교수님 목록 (기본 교수님은 layout.js의 PROFESSORS에 있음)
+create table if not exists public.professors (
+  name text primary key,
+  name_en text default '',
+  created_at timestamp with time zone default now() not null
+);
+alter table public.professors enable row level security;
+
+drop policy if exists "Anyone can read professors" on public.professors;
+create policy "Anyone can read professors"
+on public.professors for select
+using (true);
+
+drop policy if exists "Admins can insert professors" on public.professors;
+create policy "Admins can insert professors"
+on public.professors for insert
+to authenticated
+with check (public.is_admin());
+
 -- 4. 이미지 저장용 public Storage 버킷 ('project-images')
 insert into storage.buckets (id, name, public)
 values ('project-images', 'project-images', true)

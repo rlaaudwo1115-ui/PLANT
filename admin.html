@@ -47,6 +47,16 @@
 
         .req { color: #e53e3e; }
 
+        /* 새 교수님 추가 */
+        .link-btn { background: none; border: 0; padding: 6px 0 0; font: inherit; font-size: 13px; color: #2563eb; cursor: pointer; }
+        .link-btn:hover { text-decoration: underline; }
+        .add-prof { margin-top: 10px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; gap: 8px; }
+        .add-prof[hidden] { display: none; }
+        .add-prof input[type="text"] { padding: 9px 12px; font-size: 14px; background: #fff; }
+        .add-prof-actions { display: flex; gap: 6px; }
+        .add-prof-msg { margin: 0; font-size: 12px; color: #b91c1c; min-height: 0; }
+        .add-prof-msg:empty { display: none; }
+
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
             padding: 12px 15px;
@@ -488,6 +498,16 @@
                     <select id="professor" required>
                         <option value="">교수님을 선택해 주세요</option>
                     </select>
+                    <button type="button" class="link-btn" id="add-prof-toggle">+ 목록에 없는 교수님 추가</button>
+                    <div class="add-prof" id="add-prof-box" hidden>
+                        <input type="text" id="new-prof-name" placeholder="성함 (예: 홍길동)" autocomplete="off">
+                        <input type="text" id="new-prof-en" placeholder="영문 (예: Hong Gil-dong, 선택)" autocomplete="off">
+                        <div class="add-prof-actions">
+                            <button type="button" class="btn-row" id="add-prof-save">추가</button>
+                            <button type="button" class="btn-row" id="add-prof-cancel">취소</button>
+                        </div>
+                        <p class="add-prof-msg" id="add-prof-msg"></p>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>건축 유형 (Type)</label>
@@ -544,7 +564,7 @@
             document.getElementById('auth-overlay').hidden = signedIn;
             document.getElementById('admin-main').hidden = !signedIn;
             document.getElementById('admin-user').textContent = signedIn ? `${session.user.email} 로 로그인됨` : '';
-            if (signedIn) loadProjectList();
+            if (signedIn) { loadProjectList(); loadExtraProfessors(); }
         }
 
         function showAuthError(text) {
@@ -591,6 +611,59 @@
             document.getElementById(selectId).appendChild(opt);
         }
         PROFESSORS.forEach(name => addOption('professor', name));
+
+        // 관리자 페이지에서 추가한 교수님 (Supabase professors 테이블)을 선택지에 합침
+        function hasProfessorOption(name) {
+            return [...document.getElementById('professor').options].some(o => o.value === name);
+        }
+        async function loadExtraProfessors() {
+            const { data, error } = await supabaseClient.from('professors').select('name').order('created_at');
+            if (error) { console.warn('교수님 목록 불러오기 실패 (supabase_setup.sql 실행 필요?):', error.message); return; }
+            (data || []).forEach(({ name }) => { if (name && !hasProfessorOption(name)) addOption('professor', name); });
+        }
+
+        const addProfBox = document.getElementById('add-prof-box');
+        const addProfMsg = document.getElementById('add-prof-msg');
+        function closeAddProf() {
+            addProfBox.hidden = true;
+            document.getElementById('new-prof-name').value = '';
+            document.getElementById('new-prof-en').value = '';
+            addProfMsg.textContent = '';
+        }
+        document.getElementById('add-prof-toggle').addEventListener('click', () => {
+            addProfBox.hidden = !addProfBox.hidden;
+            if (!addProfBox.hidden) document.getElementById('new-prof-name').focus();
+        });
+        document.getElementById('add-prof-cancel').addEventListener('click', closeAddProf);
+        // 입력칸에서 Enter를 눌러도 프로젝트 폼이 제출되지 않고 교수님만 추가
+        addProfBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('add-prof-save').click(); }
+        });
+        document.getElementById('add-prof-save').addEventListener('click', async () => {
+            const name = document.getElementById('new-prof-name').value.replace(/\s+/g, ' ').trim();
+            const nameEn = document.getElementById('new-prof-en').value.trim();
+            const select = document.getElementById('professor');
+            if (!name) { addProfMsg.textContent = '교수님 성함을 입력해 주세요.'; return; }
+            if (hasProfessorOption(name)) {
+                select.value = name;
+                closeAddProf();
+                return;
+            }
+            const btn = document.getElementById('add-prof-save');
+            btn.disabled = true;
+            addProfMsg.textContent = '';
+            const { error } = await supabaseClient.from('professors').insert({ name, name_en: nameEn });
+            btn.disabled = false;
+            if (error && error.code !== '23505') { // 23505 = 이미 등록된 이름
+                addProfMsg.textContent = error.code === '42P01' || /professors/.test(error.message)
+                    ? '교수님 목록 표가 아직 없습니다. Supabase SQL Editor에서 supabase_setup.sql을 실행해 주세요.'
+                    : `추가하지 못했습니다: ${error.message}`;
+                return;
+            }
+            addOption('professor', name);
+            select.value = name;
+            closeAddProf();
+        });
         PROJECT_TYPES.forEach(t => addOption('type', t));
 
         function toggleGradeSelect(category) {

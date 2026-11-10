@@ -108,6 +108,9 @@
 
     <script>
         let allProjects = [];
+        // 기본 교수님(layout.js) + 관리자 페이지에서 추가한 교수님(professors 테이블)
+        let professorList = [...PROFESSORS];
+        const professorLabels = { ...PROFESSOR_LABELS };
         const filters = { year: '', studio: '', professor: '', type: '' };
 
         // 스튜디오 열: 학년 + 공모전 + 기타
@@ -171,7 +174,7 @@
             document.getElementById('filter-bar').innerHTML =
                 renderColumn('year', 'Year', toOpts(uniqueSorted(allProjects.map(p => p.year), true)))
                 + renderColumn('studio', 'Studio', STUDIO_OPTIONS)
-                + renderColumn('professor', 'Professor', toOpts(PROFESSORS, PROFESSOR_LABELS), true)
+                + renderColumn('professor', 'Professor', toOpts(professorList, professorLabels), true)
                 + renderColumn('type', 'Type', toOpts(PROJECT_TYPES, TYPE_LABELS), 3);
 
             const shown = allProjects.filter(p => matches(p));
@@ -218,8 +221,16 @@
                 return;
             }
 
-            const { data, error } = await supabaseClient
-                .from('projects').select('*').order('created_at', { ascending: false });
+            const [{ data, error }, profRes] = await Promise.all([
+                supabaseClient.from('projects').select('*').order('created_at', { ascending: false }),
+                supabaseClient.from('professors').select('name, name_en').order('created_at')
+            ]);
+            // 교수님 표가 아직 없어도(SQL 미실행) 기본 목록으로 계속 진행
+            (profRes.data || []).forEach(({ name, name_en }) => {
+                if (!name) return;
+                if (!professorList.includes(name)) professorList.push(name);
+                if (name_en && !professorLabels[name]) professorLabels[name] = name_en;
+            });
 
             if (error) {
                 console.error('프로젝트 조회 실패:', error);
