@@ -6,8 +6,48 @@
     <title>YAA! Plant - Projects</title>
     <link rel="stylesheet" href="common.css">
     <style>
+        .gallery-container { padding: 90px 60px 60px 60px; max-width: 1800px; margin: 0 auto; }
+
+        /* 🔎 상단 필터 바: 연도 / 스튜디오 / 교수 / 성격 (인덱스 스타일) */
+        .filter-bar {
+            display: grid;
+            grid-template-columns: 0.6fr 0.9fr 1.3fr 2.2fr;
+            column-gap: 10px;
+            padding: 28px 0 32px 14px;
+            margin-bottom: 20px;
+        }
+        .filter-col h4 {
+            margin: 0 0 6px 0; padding-bottom: 2px;
+            font-size: 13px; font-weight: 500; letter-spacing: 0;
+            color: #e30613; border-bottom: 1px solid #999;
+        }
+        .filter-options { list-style: none; margin: 0; padding: 0; }
+        .filter-options.two-col { columns: 2; column-gap: 10px; }
+        .filter-options.three-col { columns: 3; column-gap: 10px; }
+        .filter-options li { break-inside: avoid; }
+        .filter-opt {
+            position: relative; display: inline-block;
+            background: none; border: 0; padding: 0; margin: 0;
+            font: inherit; font-size: 13px; font-weight: 600; line-height: 1.12;
+            color: #999; cursor: pointer; text-align: left; transition: color 0.15s;
+        }
+        .filter-opt:hover { color: #111; }
+        .filter-opt.active { color: #111; }
+        .filter-opt.active::before {
+            content: '×'; position: absolute; left: -12px; top: 0;
+            color: #e30613; font-weight: 700;
+        }
+        .filter-opt.empty { color: #d5d5d5; cursor: default; }
+        .filter-opt.empty:hover { color: #d5d5d5; }
+
+        .filter-summary {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: #777; margin-bottom: 30px; min-height: 20px;
+        }
+        .filter-reset { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; color: #111; text-decoration: underline; cursor: pointer; }
+        .filter-reset[hidden] { display: none; }
+
         /* 💡 갤러리 그리드 스타일 */
-        .gallery-container { padding: 140px 60px 60px 60px; max-width: 1800px; margin: 0 auto; }
         .grid-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
         .grid-message { grid-column: 1 / -1; text-align: center; color: #777; font-size: 16px; padding: 100px 0; }
         .project-card { position: relative; display: block; aspect-ratio: 4 / 3; background-color: #e9ecef; overflow: hidden; cursor: pointer; border-radius: 4px; text-decoration: none; color: inherit; }
@@ -19,9 +59,15 @@
         .project-author { font-size: 14px; color: #ddd; margin: 0; transform: translateY(15px); transition: transform 0.4s ease; transition-delay: 0.05s; }
         .project-card:hover .project-title, .project-card:hover .project-author { transform: translateY(0); }
 
+        @media (max-width: 1024px) {
+            .filter-bar { grid-template-columns: 1fr 1fr; row-gap: 24px; }
+            .filter-options.three-col { columns: 2; }
+        }
+
         /* 📱 모바일 반응형 최적화 (768px 이하) */
         @media (max-width: 768px) {
-            .gallery-container { padding: 100px 20px 50px 20px; }
+            .gallery-container { padding: 80px 20px 50px 20px; }
+            .filter-bar { row-gap: 20px; padding: 20px 0 24px 14px; }
             .grid-wrapper { grid-template-columns: 1fr; gap: 30px; }
 
             /* 모바일에서는 마우스 호버가 없으므로 카드 하단에 항상 제목/저자 표시 */
@@ -44,6 +90,11 @@
     <header id="site-header" data-active="project"></header>
 
     <main class="gallery-container">
+        <section class="filter-bar" id="filter-bar" aria-label="Project filters"></section>
+        <div class="filter-summary">
+            <span id="filter-count"></span>
+            <button type="button" class="filter-reset" id="filter-reset" hidden>Reset filters</button>
+        </div>
         <div class="grid-wrapper" id="project-grid">
             <p class="grid-message">프로젝트 목록을 불러오는 중입니다...</p>
         </div>
@@ -56,38 +107,84 @@
     <script src="supabase-client.js"></script>
 
     <script>
-        async function loadProjects() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const gradeFilter = urlParams.get('grade');
-            const semesterFilter = urlParams.get('semester');
-            const categoryFilter = urlParams.get('category');
+        let allProjects = [];
+        const filters = { year: '', studio: '', professor: '', type: '' };
+
+        // 스튜디오 열: 학년 + 공모전 + 기타
+        const STUDIO_OPTIONS = [
+            { value: 'y1', label: 'Year 1' }, { value: 'y2', label: 'Year 2' },
+            { value: 'y3', label: 'Year 3' }, { value: 'y4', label: 'Year 4' },
+            { value: 'y5', label: 'Year 5' },
+            { value: 'competition', label: 'Competition' }, { value: 'other', label: 'Other' }
+        ];
+
+        function studioKey(p) {
+            return p.category === 'studio' ? `y${p.grade}` : (p.category || '');
+        }
+
+        function matches(p, skip) {
+            return (skip === 'year' || !filters.year || String(p.year) === filters.year)
+                && (skip === 'studio' || !filters.studio || studioKey(p) === filters.studio)
+                && (skip === 'professor' || !filters.professor || p.professor === filters.professor)
+                && (skip === 'type' || !filters.type || p.type === filters.type);
+        }
+
+        // 주소창의 ?year=2026&professor=... 와 필터 상태를 동기화 (예전 ?grade=3, ?category=competition 링크도 지원)
+        function readURL() {
+            const q = new URLSearchParams(location.search);
+            filters.year = q.get('year') || '';
+            filters.professor = q.get('professor') || '';
+            filters.type = q.get('type') || '';
+            filters.studio = q.get('studio')
+                || (q.get('grade') ? `y${q.get('grade')}` : '')
+                || q.get('category') || '';
+        }
+        function writeURL() {
+            const q = new URLSearchParams();
+            Object.entries(filters).forEach(([k, v]) => { if (v) q.set(k, v); });
+            const qs = q.toString();
+            history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+        }
+
+        function uniqueSorted(values, desc) {
+            const list = [...new Set(values.filter(Boolean).map(String))];
+            list.sort((a, b) => a.localeCompare(b, 'ko'));
+            return desc ? list.reverse() : list;
+        }
+
+        function renderColumn(key, title, options, cols) {
+            const items = options.map(({ value, label }) => {
+                const count = allProjects.filter(p => matches(p, key) && (
+                    key === 'year' ? String(p.year) === value :
+                    key === 'studio' ? studioKey(p) === value :
+                    p[key] === value)).length;
+                const active = filters[key] === value;
+                const cls = ['filter-opt', active ? 'active' : '', !count && !active ? 'empty' : ''].join(' ').trim();
+                return `<li><button type="button" class="${cls}" data-key="${key}" data-value="${escapeHTML(value)}"${!count && !active ? ' disabled' : ''}>`
+                    + `${escapeHTML(label)}</button></li>`;
+            }).join('');
+            return `<div class="filter-col"><h4>${title}</h4><ul class="filter-options${cols === 3 ? ' three-col' : cols ? ' two-col' : ''}">${items}</ul></div>`;
+        }
+
+        function render() {
+            const toOpts = (list, labels = {}) => list.map(v => ({ value: v, label: labels[v] || v }));
+            document.getElementById('filter-bar').innerHTML =
+                renderColumn('year', 'Year', toOpts(uniqueSorted(allProjects.map(p => p.year), true)))
+                + renderColumn('studio', 'Studio', STUDIO_OPTIONS)
+                + renderColumn('professor', 'Professor', toOpts(PROFESSORS, PROFESSOR_LABELS), true)
+                + renderColumn('type', 'Type', toOpts(PROJECT_TYPES, TYPE_LABELS), 3);
+
+            const shown = allProjects.filter(p => matches(p));
+            const anyFilter = Object.values(filters).some(Boolean);
+            document.getElementById('filter-count').textContent = `${shown.length} Projects`;
+            document.getElementById('filter-reset').hidden = !anyFilter;
 
             const grid = document.getElementById('project-grid');
-
-            if (!supabaseClient) {
-                grid.innerHTML = '<p class="grid-message">데이터베이스에 연결할 수 없습니다.</p>';
+            if (shown.length === 0) {
+                grid.innerHTML = `<p class="grid-message">${anyFilter ? '선택한 조건에 맞는 프로젝트가 없습니다.' : '등록된 프로젝트가 없습니다.'}</p>`;
                 return;
             }
-
-            let query = supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
-            if (gradeFilter) query = query.eq('grade', parseInt(gradeFilter));
-            if (semesterFilter) query = query.eq('semester', parseInt(semesterFilter));
-            if (categoryFilter) query = query.eq('category', categoryFilter);
-
-            const { data, error } = await query;
-
-            if (error) {
-                console.error('프로젝트 조회 실패:', error);
-                grid.innerHTML = '<p class="grid-message">프로젝트 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>';
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                grid.innerHTML = '<p class="grid-message">해당 카테고리에 등록된 프로젝트가 없습니다.</p>';
-                return;
-            }
-
-            grid.innerHTML = data.map(project => `
+            grid.innerHTML = shown.map(project => `
                 <a class="project-card" href="project_detail.html?id=${encodeURIComponent(project.id)}">
                     <img src="${escapeHTML(safeURL(project.thumbnail))}" alt="${escapeHTML(project.title)}" class="project-image" loading="lazy">
                     <div class="overlay">
@@ -96,6 +193,43 @@
                     </div>
                 </a>
             `).join('');
+        }
+
+        // 같은 항목을 다시 누르면 선택 해제
+        document.getElementById('filter-bar').addEventListener('click', (e) => {
+            const btn = e.target.closest('.filter-opt');
+            if (!btn || btn.disabled) return;
+            const { key, value } = btn.dataset;
+            filters[key] = filters[key] === value ? '' : value;
+            writeURL();
+            render();
+        });
+
+        document.getElementById('filter-reset').addEventListener('click', () => {
+            Object.keys(filters).forEach(k => { filters[k] = ''; });
+            writeURL();
+            render();
+        });
+
+        async function loadProjects() {
+            const grid = document.getElementById('project-grid');
+            if (!supabaseClient) {
+                grid.innerHTML = '<p class="grid-message">데이터베이스에 연결할 수 없습니다.</p>';
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('projects').select('*').order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('프로젝트 조회 실패:', error);
+                grid.innerHTML = '<p class="grid-message">프로젝트 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>';
+                return;
+            }
+
+            allProjects = data || [];
+            readURL();
+            render();
         }
 
         loadProjects();

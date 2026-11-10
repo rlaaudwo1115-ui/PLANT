@@ -481,9 +481,19 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>건축 유형 (Type)</label>
-                <input type="text" id="type" placeholder="예: 소공간, 종교시설, MXD 등">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>담당 교수</label>
+                    <select id="professor">
+                        <option value="">선택 안 함</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>건축 유형 (Type)</label>
+                    <select id="type">
+                        <option value="">선택 안 함</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
@@ -572,6 +582,15 @@
         if (supabaseClient) {
             supabaseClient.auth.getSession().then(({ data }) => showAdmin(data.session));
         }
+
+        // 담당 교수 / 프로젝트 성격 목록은 layout.js의 PROFESSORS, PROJECT_TYPES에서 가져옴
+        function addOption(selectId, value) {
+            const opt = document.createElement('option');
+            opt.value = opt.textContent = value;
+            document.getElementById(selectId).appendChild(opt);
+        }
+        PROFESSORS.forEach(name => addOption('professor', name));
+        PROJECT_TYPES.forEach(t => addOption('type', t));
 
         function toggleGradeSelect(category) {
             const gradeGroup = document.getElementById('grade-group');
@@ -807,7 +826,11 @@
             document.getElementById('title').value = project.title || '';
             document.getElementById('author').value = project.author || '';
             document.getElementById('year').value = project.year || '';
-            document.getElementById('type').value = project.type || '';
+            // 목록에 없는 예전 유형이면 선택지에 임시로 추가해서 보존
+            const typeSelect = document.getElementById('type');
+            if (project.type && ![...typeSelect.options].some(o => o.value === project.type)) addOption('type', project.type);
+            typeSelect.value = project.type || '';
+            document.getElementById('professor').value = project.professor || '';
             document.getElementById('category').value = project.category || 'studio';
             toggleGradeSelect(project.category || 'studio');
             if (project.category === 'studio') {
@@ -946,7 +969,8 @@
                 const category = document.getElementById('category').value;
                 const grade = category === 'studio' ? parseInt(document.getElementById('grade').value) : 0;
                 const semester = category === 'studio' ? parseInt(document.getElementById('semester').value) : 0;
-                const type = document.getElementById('type').value.trim() || 'Architecture';
+                const type = document.getElementById('type').value;
+                const professor = document.getElementById('professor').value;
                 // 줄바꿈은 그대로 저장 (상세 페이지에서 일반 텍스트로 표시)
                 const description = document.getElementById('description').value.trim();
 
@@ -979,7 +1003,7 @@
 
                 // 3. DB 저장 (INSERT 또는 UPDATE)
                 showStatus('⏳ 데이터베이스에 저장하고 있습니다...', 'loading');
-                const record = { title, author, year, grade, semester, category, type, thumbnail: thumbnailUrl, detail_images: detailImages, description };
+                const record = { title, author, year, grade, semester, category, type, professor, thumbnail: thumbnailUrl, detail_images: detailImages, description };
 
                 if (isEdit) {
                     const { data, error } = await supabaseClient

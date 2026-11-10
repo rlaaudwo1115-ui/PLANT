@@ -5,10 +5,10 @@
 
 body { margin: 0; padding: 0; font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8f9fa; color: #222; line-height: 1.6; letter-spacing: -0.3px; }
 
-header { position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background-color: #f8f9fa; }
-.logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
-.nav-links { display: flex; gap: 40px; }
-.nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
+header { position: fixed; top: 0; left: 0; width: 100%; padding: 22px 60px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background-color: #f8f9fa; }
+.logo { font-size: 19px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a { text-decoration: none; color: #777; font-size: 13px; font-weight: 500; transition: color 0.3s ease; }
 .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
 
 .dropdown { position: relative; display: inline-block; padding-bottom: 10px; }
@@ -28,9 +28,9 @@ header { position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-
 
 @media (max-width: 768px) {
     header { padding: 20px 24px; }
-    .logo { font-size: 20px; }
+    .logo { font-size: 17px; }
     .nav-links { gap: 20px; }
-    .nav-links a { font-size: 14px; }
+    .nav-links a { font-size: 13px; }
     .dropdown-menu { left: auto; right: -40px; transform: none; }
     .submenu { left: auto; right: 100%; }
 }

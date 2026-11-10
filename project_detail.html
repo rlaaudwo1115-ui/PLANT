@@ -68,6 +68,7 @@
                     <span><strong>Year</strong> <span id="detail-year"></span></span>
                     <span><strong>Type</strong> <span id="detail-type"></span></span>
                     <span><strong>Author</strong> <span id="detail-author"></span></span>
+                    <span id="detail-professor-wrap" hidden><strong>Professor</strong> <span id="detail-professor"></span></span>
                 </div>
                 <p class="project-desc" id="detail-desc"></p>
             </div>
@@ -111,6 +112,10 @@
             document.getElementById('detail-year').textContent = project.year || '-';
             document.getElementById('detail-type').textContent = project.type || '-';
             document.getElementById('detail-author').textContent = project.author || '-';
+            if (project.professor) {
+                document.getElementById('detail-professor').textContent = project.professor;
+                document.getElementById('detail-professor-wrap').hidden = false;
+            }
 
             // 설명은 일반 텍스트로 표시 (예전에 <br>로 저장된 줄바꿈도 줄바꿈으로 변환)
             const desc = (project.description || '').replace(/<br\s*\/?>/gi, '\n');

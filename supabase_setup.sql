@@ -17,6 +17,9 @@ create table if not exists public.projects (
   description text default ''
 );
 
+-- 1-1. 담당 교수 컬럼 (이미 테이블이 있어도 안전하게 추가)
+alter table public.projects add column if not exists professor text default '';
+
 -- 2. 관리자 목록 테이블 (여기에 등록된 이메일로 로그인한 사람만 업로드/삭제 가능)
 create table if not exists public.admins (
   email text primary key
