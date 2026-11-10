@@ -4,24 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YAA! Plant - Upload & Admin</title>
+    <link rel="stylesheet" href="common.css">
     <style>
-        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
-        body { 
-            margin: 0; padding: 0; 
-            font-family: 'Pretendard', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            background-color: #f8f9fa; color: #222; line-height: 1.6; letter-spacing: -0.3px; 
-        }
-
-        header { 
-            position: fixed; top: 0; left: 0; width: 100%; padding: 30px 60px; box-sizing: border-box; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000; 
-            background-color: #f8f9fa; border-bottom: 1px solid #dcdcdc; 
-        }
-        .logo { font-size: 24px; font-weight: bold; text-decoration: none; color: #111; letter-spacing: -0.5px; }
-        .nav-links { display: flex; gap: 40px; }
-        .nav-links a { text-decoration: none; color: #777; font-size: 16px; font-weight: 500; transition: color 0.3s ease; }
-        .nav-links a:hover, .nav-links a.active { color: #111; font-weight: bold; }
-
         .container { 
             padding: 140px 60px 100px 60px; 
             max-width: 800px; 
@@ -139,12 +123,38 @@
         .migration-btn:hover { background-color: #2d3748; }
 
         /* 📱 모바일 반응형 최적화 */
-        @media (max-width: 768px) {
-            header { padding: 20px 24px; }
-            .logo { font-size: 20px; }
-            .nav-links { gap: 20px; }
-            .nav-links a { font-size: 14px; }
+        .admin-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #666; margin-bottom: 30px; }
+        .btn-logout { padding: 6px 14px; background: #eee; color: #444; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; font-family: inherit; }
+        .btn-logout:hover { background: #ddd; }
 
+        /* ✏️ 수정 모드 배너 & 현재 썸네일 */
+        .edit-banner { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: #fef9c3; border: 1px solid #fde68a; color: #713f12; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px; }
+        .thumb-current { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; font-size: 13px; color: #666; }
+        .thumb-current img { width: 90px; height: 68px; object-fit: cover; border-radius: 4px; background: #e2e8f0; flex-shrink: 0; }
+
+        /* 📋 등록된 프로젝트 목록 */
+        .list-title { font-size: 22px; font-weight: bold; margin: 0 0 15px 0; color: #111; }
+        #list-status { display: none; padding: 15px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; font-weight: 500; }
+        .project-list { display: flex; flex-direction: column; gap: 10px; }
+        .project-row { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
+        .project-row-thumb { width: 72px; height: 54px; object-fit: cover; border-radius: 4px; background: #e2e8f0; flex-shrink: 0; }
+        .project-row-info { flex: 1; min-width: 0; }
+        .project-row-title { font-size: 15px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-row-meta { font-size: 12px; color: #777; margin-top: 2px; }
+        .project-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .btn-row { padding: 7px 14px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; font-family: inherit; color: #334155; cursor: pointer; }
+        .btn-row:hover:not(:disabled) { background: #e2e8f0; }
+        .btn-row:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-row-danger { background: #fee2e2; border-color: #fecaca; color: #b91c1c; }
+        .btn-row-danger:hover:not(:disabled) { background: #fecaca; }
+        .btn-row-danger-solid { background: #ef4444; border-color: #ef4444; color: #fff; }
+        .btn-row-danger-solid:hover:not(:disabled) { background: #dc2626; }
+        .confirm-text { font-size: 13px; color: #b91c1c; font-weight: 600; margin-right: 4px; }
+        .list-empty { text-align: center; color: #888; font-size: 14px; padding: 30px 0; }
+
+        @media (max-width: 768px) {
+            .project-row { flex-wrap: wrap; }
+            .project-row-actions { width: 100%; justify-content: flex-end; }
             .container { padding: 90px 20px 60px 20px; }
             .form-card { padding: 25px 20px; }
             .form-row { flex-direction: column; gap: 0; }
@@ -163,25 +173,268 @@
         .status-success { background-color: #def7ec; color: #03543f; border: 1px solid #bcf0da; }
         .status-error { background-color: #fde8e8; color: #9b1c1c; border: 1px solid #f8b4b4; }
         .status-loading { background-color: #e1effe; color: #1e429f; border: 1px solid #b4c6fc; }
+
+        /* 🖼️ 상세 이미지 리스트 & 순서 정렬 스타일 */
+        .detail-list-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .detail-item:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .detail-thumb {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .detail-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .detail-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .detail-size {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .btn-order {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #334155;
+            transition: all 0.15s;
+        }
+
+        .btn-order:hover:not(:disabled) {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+
+        .btn-order:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-del {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #b91c1c;
+            transition: all 0.15s;
+            margin-left: 4px;
+        }
+
+        .btn-del:hover {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
+
+        .add-files-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #f1f5f9;
+            border: 1px dashed #94a3b8;
+            border-radius: 6px;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .add-files-btn:hover {
+            background: #e2e8f0;
+            border-color: #64748b;
+            color: #0f172a;
+        }
+
+        /* 🔒 관리자 인증 모달 스타일 */
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            color: #111;
+            font-weight: 700;
+        }
+
+        .auth-card p {
+            margin: 0 0 25px 0;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .auth-card input[type="password"], .auth-card input[type="email"] {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+            margin-bottom: 12px;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .auth-card input[type="password"]:focus, .auth-card input[type="email"]:focus {
+            border-color: #111;
+        }
+
+        .auth-btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-btn-submit {
+            flex: 2;
+            padding: 14px;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .auth-btn-submit:hover { background: #333; }
+
+        .auth-btn-back {
+            flex: 1;
+            padding: 14px;
+            background: #eee;
+            color: #444;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .auth-btn-back:hover { background: #ddd; }
+
+        .auth-error-msg {
+            color: #e53e3e;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="main.html" class="logo">PLANT</a>
-        <nav class="nav-links">
-            <a href="main.html">Project</a>
-            <a href="info.html">Info</a>
-            <a href="contact.html">Contact</a>
-            <a href="admin.html" class="active">Upload</a>
-        </nav>
-    </header>
+    <!-- 🔒 관리자 인증 모달 -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>관리자 인증</h2>
+            <p>PLANT 관리자(관리부) 전용 페이지입니다.<br>관리자 계정으로 로그인해 주세요.</p>
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="관리자 이메일" required autofocus autocomplete="username">
+                <input type="password" id="auth-password" placeholder="비밀번호" required autocomplete="current-password">
+                <div class="auth-btn-row">
+                    <button type="button" class="auth-btn-back" onclick="location.href='main.html'">취소</button>
+                    <button type="submit" id="auth-submit" class="auth-btn-submit">로그인</button>
+                </div>
+                <div id="auth-error" class="auth-error-msg"></div>
+            </form>
+        </div>
+    </div>
 
-    <main class="container">
-        <h1 class="page-title">새 프로젝트 등록하기</h1>
+    <header id="site-header"></header>
+
+    <main class="container" id="admin-main" hidden>
+        <div class="admin-bar">
+            <span id="admin-user"></span>
+            <button type="button" class="btn-logout" id="logout-btn">로그아웃</button>
+        </div>
+        <h1 class="page-title" id="page-title">새 프로젝트 등록하기</h1>
         <p class="page-desc">프로젝트 정보와 이미지를 입력하면 Supabase DB 및 이미지 스토리지에 자동으로 등록됩니다.</p>
 
         <div id="status-msg"></div>
+
+        <div id="edit-banner" class="edit-banner" hidden>
+            <span>✏️ 수정 중: <strong id="edit-banner-title"></strong></span>
+            <button type="button" class="btn-logout" id="cancel-edit-btn">수정 취소</button>
+        </div>
 
         <form id="project-form" class="form-card">
             <div class="form-group">
@@ -234,15 +487,24 @@
             </div>
 
             <div class="form-group">
-                <label>메인 대표 썸네일 이미지 <span class="req">*</span></label>
+                <label>메인 대표 썸네일 이미지 <span class="req" id="thumb-required">*</span></label>
+                <div id="thumb-current" class="thumb-current" hidden>
+                    <img id="thumb-current-img" alt="현재 썸네일">
+                    <span>현재 썸네일입니다. 바꾸려면 아래에서 새 파일을 선택하고, 그대로 두려면 비워 두세요.</span>
+                </div>
                 <input type="file" id="thumbnail-file" accept="image/*" required>
                 <div class="file-hint">메인 갤러리 그리드에 표시될 대표 1장입니다. (JPG, PNG, WebP)</div>
             </div>
 
             <div class="form-group">
-                <label>상세 패널 / 도면 / 추가 이미지들 (다중 선택 가능)</label>
-                <input type="file" id="detail-files" accept="image/*" multiple>
-                <div class="file-hint">상세 페이지 하단에 순서대로 표시될 이미지들입니다. (Ctrl 또는 Shift 누르고 여러 장 선택)</div>
+                <label>상세 패널 / 도면 / 추가 이미지들</label>
+                <input type="file" id="detail-files-input" accept="image/*" multiple style="display: none;" onchange="handleDetailFilesSelect(this.files)">
+                <button type="button" class="add-files-btn" onclick="document.getElementById('detail-files-input').click()">
+                    + 이미지 파일 추가하기 (여러 번 추가 가능)
+                </button>
+                <div class="file-hint">추가된 파일들은 아래 목록에 차례대로 쌓이며, [▲] [▼] 버튼으로 순서를 변경할 수 있습니다.</div>
+                
+                <div id="detail-list" class="detail-list-container"></div>
             </div>
 
             <div class="form-group">
@@ -253,19 +515,64 @@
             <button type="submit" id="submit-btn" class="btn-submit">Supabase DB에 등록하기</button>
         </form>
 
-        <div class="migration-box" style="border: 1px dashed #e53e3e; background: #fff5f5;">
-            <h3 style="margin-top:0; color: #c53030;">🗑️ DB 등록 데이터 전체 초기화</h3>
-            <p style="font-size:14px; color:#742a2a;">Supabase 데이터베이스에 등록된 모든 프로젝트 레코드를 비웁니다.</p>
-            <button type="button" class="migration-btn" style="background-color: #e53e3e;" onclick="clearAllProjects()">모든 프로젝트 DB 데이터 삭제하기</button>
-        </div>
+        <h2 class="list-title">등록된 프로젝트</h2>
+        <div id="list-status"></div>
+        <div id="project-list" class="project-list"></div>
     </main>
 
     <!-- Supabase JS 라이브러리 및 클라이언트 연동 -->
+    <script src="layout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
-    <script src="projects.js"></script>
 
     <script>
+        // 🔒 관리자 인증: Supabase Auth 로그인 (비밀번호는 코드에 저장하지 않음)
+        // 실제 업로드 권한은 DB 정책(supabase_setup.sql의 is_admin)이 서버에서 검사합니다.
+        function showAdmin(session) {
+            const signedIn = !!(session && session.user);
+            document.getElementById('auth-overlay').hidden = signedIn;
+            document.getElementById('admin-main').hidden = !signedIn;
+            document.getElementById('admin-user').textContent = signedIn ? `${session.user.email} 로 로그인됨` : '';
+            if (signedIn) loadProjectList();
+        }
+
+        function showAuthError(text) {
+            const errorMsg = document.getElementById('auth-error');
+            errorMsg.textContent = text;
+            errorMsg.style.display = 'block';
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabaseClient) return showAuthError('Supabase에 연결할 수 없습니다.');
+
+            const btn = document.getElementById('auth-submit');
+            btn.disabled = true;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: document.getElementById('auth-email').value.trim(),
+                password: document.getElementById('auth-password').value
+            });
+            btn.disabled = false;
+
+            if (error) {
+                showAuthError('이메일 또는 비밀번호가 올바르지 않습니다.');
+                document.getElementById('auth-password').value = '';
+                document.getElementById('auth-password').focus();
+                return;
+            }
+            showAdmin(data.session);
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            showAdmin(null);
+        });
+
+        // 이미 로그인한 상태면 바로 폼 표시
+        if (supabaseClient) {
+            supabaseClient.auth.getSession().then(({ data }) => showAdmin(data.session));
+        }
+
         function toggleGradeSelect(category) {
             const gradeGroup = document.getElementById('grade-group');
             const semesterGroup = document.getElementById('semester-group');
@@ -278,12 +585,16 @@
             }
         }
 
-        function showStatus(text, type) {
-            const msg = document.getElementById('status-msg');
+        function showStatus(text, type, targetId = 'status-msg') {
+            const msg = document.getElementById(targetId);
             msg.className = '';
             msg.classList.add('status-' + type);
             msg.style.display = 'block';
             msg.innerHTML = text;
+            // 폼이 길어서 메시지가 화면 밖에 있을 수 있으므로, 결과(성공/오류)는 보이는 위치로 스크롤
+            if (type !== 'loading' || msg.getBoundingClientRect().top < 80) {
+                msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         // 💡 고성능 클라이언트 자동 이미지 압축 & WebP 변환 함수 (용량 90~95% 절감)
@@ -364,10 +675,266 @@
             return publicUrl;
         }
 
-        // 폼 제출 이벤트
+        // 📂 상세 이미지 목록: 기존 이미지({url})와 새로 추가한 파일({file})을 한 목록으로 관리
+        let detailItems = [];
+        let editingProject = null; // null이면 새 등록 모드, 값이 있으면 수정 모드
+
+        // Storage 공개 주소에서 버킷 안의 파일 경로를 뽑아냄 (이미지 정리용)
+        const STORAGE_MARKER = '/storage/v1/object/public/project-images/';
+        function storagePathFromUrl(url) {
+            const s = String(url || '');
+            const i = s.indexOf(STORAGE_MARKER);
+            if (i === -1) return null;
+            try { return decodeURIComponent(s.slice(i + STORAGE_MARKER.length).split('?')[0]); }
+            catch (e) { return null; }
+        }
+
+        // Storage 파일 삭제. 실패해도 작업 자체는 막지 않고 콘솔에만 남김
+        async function removeFromStorage(urls) {
+            const paths = urls.map(storagePathFromUrl).filter(Boolean);
+            if (paths.length === 0) return;
+            try {
+                const { error } = await supabaseClient.storage.from('project-images').remove(paths);
+                if (error) console.warn('Storage 정리 실패:', error);
+            } catch (err) {
+                console.warn('Storage 정리 실패:', err);
+            }
+        }
+
+        function handleDetailFilesSelect(files) {
+            if (!files || files.length === 0) return;
+            for (let i = 0; i < files.length; i++) {
+                detailItems.push({ file: files[i] });
+            }
+            // 같은 파일 다시 선택할 수 있도록 input 초기화
+            document.getElementById('detail-files-input').value = '';
+            renderDetailList();
+        }
+
+        function moveDetailFile(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= detailItems.length) return;
+            const temp = detailItems[index];
+            detailItems[index] = detailItems[targetIndex];
+            detailItems[targetIndex] = temp;
+            renderDetailList();
+        }
+
+        function removeDetailFile(index) {
+            detailItems.splice(index, 1);
+            renderDetailList();
+        }
+
+        function makeBtn(className, text, title, onclick, disabled) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = className;
+            b.textContent = text;
+            b.title = title;
+            b.disabled = !!disabled;
+            b.onclick = onclick;
+            return b;
+        }
+
+        function renderDetailList() {
+            const container = document.getElementById('detail-list');
+            container.innerHTML = '';
+
+            detailItems.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'detail-item';
+
+                // 썸네일 미리보기
+                const img = document.createElement('img');
+                img.className = 'detail-thumb';
+                if (item.file) {
+                    img.src = URL.createObjectURL(item.file);
+                    img.onload = () => URL.revokeObjectURL(img.src);
+                } else {
+                    img.src = safeURL(item.url);
+                }
+
+                // 파일 정보
+                const info = document.createElement('div');
+                info.className = 'detail-info';
+                let nameText, sizeText;
+                if (item.file) {
+                    const f = item.file;
+                    nameText = f.name;
+                    sizeText = (f.size >= 1024 * 1024 ? `${(f.size / (1024 * 1024)).toFixed(2)} MB` : `${(f.size / 1024).toFixed(1)} KB`) + ' · 새 파일';
+                } else {
+                    nameText = decodeURIComponent(String(item.url).split('/').pop().split('?')[0]);
+                    sizeText = '기존 이미지';
+                }
+                info.innerHTML = `
+                    <div class="detail-name">${index + 1}. ${escapeHTML(nameText)}</div>
+                    <div class="detail-size">${escapeHTML(sizeText)}</div>
+                `;
+
+                // 순서 변경 & 삭제 버튼들
+                const actions = document.createElement('div');
+                actions.className = 'detail-actions';
+                actions.appendChild(makeBtn('btn-order', '▲', '위로 이동', () => moveDetailFile(index, -1), index === 0));
+                actions.appendChild(makeBtn('btn-order', '▼', '아래로 이동', () => moveDetailFile(index, 1), index === detailItems.length - 1));
+                actions.appendChild(makeBtn('btn-del', '✕', '목록에서 제거', () => removeDetailFile(index)));
+
+                row.appendChild(img);
+                row.appendChild(info);
+                row.appendChild(actions);
+                container.appendChild(row);
+            });
+        }
+
+        // ✏️ 폼 모드 전환 (새 등록 ↔ 수정)
+        function resetForm() {
+            editingProject = null;
+            document.getElementById('project-form').reset();
+            toggleGradeSelect('studio');
+            detailItems = [];
+            renderDetailList();
+            document.getElementById('edit-banner').hidden = true;
+            document.getElementById('thumb-current').hidden = true;
+            document.getElementById('thumbnail-file').required = true;
+            document.getElementById('thumb-required').hidden = false;
+            document.getElementById('page-title').textContent = '새 프로젝트 등록하기';
+            document.getElementById('submit-btn').textContent = 'Supabase DB에 등록하기';
+        }
+
+        function startEdit(project) {
+            resetForm();
+            editingProject = project;
+
+            document.getElementById('title').value = project.title || '';
+            document.getElementById('author').value = project.author || '';
+            document.getElementById('year').value = project.year || '';
+            document.getElementById('type').value = project.type || '';
+            document.getElementById('category').value = project.category || 'studio';
+            toggleGradeSelect(project.category || 'studio');
+            if (project.category === 'studio') {
+                document.getElementById('grade').value = String(project.grade || 1);
+                document.getElementById('semester').value = String(project.semester || 1);
+            }
+            // 예전에 <br>로 저장된 줄바꿈은 일반 줄바꿈으로 되돌려서 보여줌
+            document.getElementById('description').value = (project.description || '').replace(/<br\s*\/?>/gi, '\n');
+
+            detailItems = (project.detail_images || []).map(url => ({ url }));
+            renderDetailList();
+
+            document.getElementById('thumb-current-img').src = safeURL(project.thumbnail);
+            document.getElementById('thumb-current').hidden = false;
+            document.getElementById('thumbnail-file').required = false;
+            document.getElementById('thumb-required').hidden = true;
+
+            document.getElementById('edit-banner-title').textContent = project.title || '';
+            document.getElementById('edit-banner').hidden = false;
+            document.getElementById('page-title').textContent = '프로젝트 수정하기';
+            document.getElementById('submit-btn').textContent = '수정 내용 저장하기';
+            document.getElementById('status-msg').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
+
+        // 📋 등록된 프로젝트 목록 (수정 / 삭제)
+        function categoryLabel(p) {
+            if (p.category === 'studio') return `Year ${p.grade} · Semester ${p.semester}`;
+            if (p.category === 'competition') return 'Competition';
+            return 'Other';
+        }
+
+        async function deleteProject(project) {
+            const { data, error } = await supabaseClient.from('projects').delete().eq('id', project.id).select();
+            if (error) throw error;
+            if (!data || data.length === 0) throw new Error('삭제 권한이 없거나 이미 삭제된 프로젝트입니다.');
+            // DB 삭제가 성공한 뒤에만 이미지 파일 정리
+            await removeFromStorage([project.thumbnail, ...(project.detail_images || [])]);
+            if (editingProject && editingProject.id === project.id) resetForm();
+        }
+
+        function renderProjectRow(project) {
+            const row = document.createElement('div');
+            row.className = 'project-row';
+
+            const img = document.createElement('img');
+            img.className = 'project-row-thumb';
+            img.src = safeURL(project.thumbnail);
+            img.alt = '';
+
+            const info = document.createElement('div');
+            info.className = 'project-row-info';
+            info.innerHTML = `
+                <div class="project-row-title">${escapeHTML(project.title)}</div>
+                <div class="project-row-meta">${escapeHTML(project.author)} · ${escapeHTML(project.year || '-')} · ${escapeHTML(categoryLabel(project))}</div>
+            `;
+
+            const actions = document.createElement('div');
+            actions.className = 'project-row-actions';
+
+            function showNormal() {
+                actions.innerHTML = '';
+                actions.appendChild(makeBtn('btn-row', '수정', '이 프로젝트 수정', () => startEdit(project)));
+                actions.appendChild(makeBtn('btn-row btn-row-danger', '삭제', '이 프로젝트 삭제', showConfirm));
+            }
+
+            // 화면 안에서 확인받는 삭제 단계 (브라우저 confirm 창 대신)
+            function showConfirm() {
+                actions.innerHTML = '';
+                const q = document.createElement('span');
+                q.className = 'confirm-text';
+                q.textContent = '정말 삭제할까요?';
+                actions.appendChild(q);
+                const yes = makeBtn('btn-row btn-row-danger-solid', '삭제', '삭제 확정', async () => {
+                    yes.disabled = true;
+                    try {
+                        await deleteProject(project);
+                        showStatus(`🗑️ "${escapeHTML(project.title)}" 프로젝트를 삭제했습니다.`, 'success', 'list-status');
+                        loadProjectList();
+                    } catch (err) {
+                        console.error(err);
+                        showStatus(`❌ 삭제 중 오류가 발생했습니다: ${escapeHTML(err.message)}`, 'error', 'list-status');
+                        showNormal();
+                    }
+                });
+                actions.appendChild(yes);
+                actions.appendChild(makeBtn('btn-row', '취소', '삭제 취소', showNormal));
+            }
+
+            showNormal();
+            row.appendChild(img);
+            row.appendChild(info);
+            row.appendChild(actions);
+            return row;
+        }
+
+        async function loadProjectList() {
+            if (!supabaseClient) return;
+            const box = document.getElementById('project-list');
+            box.innerHTML = '<p class="list-empty">불러오는 중입니다...</p>';
+
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                box.innerHTML = '<p class="list-empty">목록을 불러오지 못했습니다.</p>';
+                return;
+            }
+            if (!data || data.length === 0) {
+                box.innerHTML = '<p class="list-empty">등록된 프로젝트가 없습니다.</p>';
+                return;
+            }
+            box.innerHTML = '';
+            data.forEach(p => box.appendChild(renderProjectRow(p)));
+        }
+
+        // 폼 제출 이벤트 (등록 / 수정 공용)
         document.getElementById('project-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submit-btn');
+            const isEdit = !!editingProject;
+            const uploadedUrls = []; // 이번 저장에서 새로 올린 파일 (실패 시 정리용)
 
             try {
                 submitBtn.disabled = true;
@@ -380,74 +947,73 @@
                 const grade = category === 'studio' ? parseInt(document.getElementById('grade').value) : 0;
                 const semester = category === 'studio' ? parseInt(document.getElementById('semester').value) : 0;
                 const type = document.getElementById('type').value.trim() || 'Architecture';
-                const description = document.getElementById('description').value.trim().replace(/\n/g, '<br>');
+                // 줄바꿈은 그대로 저장 (상세 페이지에서 일반 텍스트로 표시)
+                const description = document.getElementById('description').value.trim();
 
-                // 1. 썸네일 업로드 (갤러리용이므로 가로 1200px로 더욱 가볍게 최적화)
+                // 1. 썸네일: 새 파일을 골랐을 때만 업로드 (수정 모드에서 비우면 기존 유지)
                 const thumbFile = document.getElementById('thumbnail-file').files[0];
-                if (!thumbFile) throw new Error("대표 썸네일 이미지를 선택해주세요.");
-                showStatus('⏳ 썸네일 이미지 압축 및 전송 중...', 'loading');
-                const thumbnailUrl = await uploadImage(thumbFile, 1200);
-
-                // 2. 상세 이미지들 업로드 (판넬 상세용이므로 2000px 유지 고화질 압축)
-                const detailFiles = document.getElementById('detail-files').files;
-                const detailImages = [];
-                for (let i = 0; i < detailFiles.length; i++) {
-                    showStatus(`⏳ 상세 이미지 최적화 및 업로드 중 (${i + 1}/${detailFiles.length})...`, 'loading');
-                    const url = await uploadImage(detailFiles[i], 2000);
-                    detailImages.push(url);
+                let thumbnailUrl = isEdit ? editingProject.thumbnail : null;
+                if (thumbFile) {
+                    showStatus('⏳ 썸네일 이미지 압축 및 전송 중...', 'loading');
+                    thumbnailUrl = await uploadImage(thumbFile, 1200);
+                    uploadedUrls.push(thumbnailUrl);
+                } else if (!isEdit) {
+                    throw new Error("대표 썸네일 이미지를 선택해주세요.");
                 }
 
-                // 3. projects 테이블에 INSERT
-                showStatus('⏳ 데이터베이스에 프로젝트 레코드를 저장하고 있습니다...', 'loading');
-                const { data, error } = await supabaseClient
-                    .from('projects')
-                    .insert([{
-                        title,
-                        author,
-                        year,
-                        grade,
-                        semester,
-                        category,
-                        type,
-                        thumbnail: thumbnailUrl,
-                        detail_images: detailImages,
-                        description
-                    }])
-                    .select();
+                // 2. 상세 이미지: 기존 이미지는 주소 그대로, 새 파일만 업로드 (목록 순서 유지)
+                const detailImages = [];
+                const newCount = detailItems.filter(it => it.file).length;
+                let uploadedCount = 0;
+                for (const item of detailItems) {
+                    if (item.url) {
+                        detailImages.push(item.url);
+                    } else {
+                        uploadedCount++;
+                        showStatus(`⏳ 상세 이미지 최적화 및 업로드 중 (${uploadedCount}/${newCount})...`, 'loading');
+                        const url = await uploadImage(item.file, 2000);
+                        uploadedUrls.push(url);
+                        detailImages.push(url);
+                    }
+                }
 
-                if (error) throw error;
+                // 3. DB 저장 (INSERT 또는 UPDATE)
+                showStatus('⏳ 데이터베이스에 저장하고 있습니다...', 'loading');
+                const record = { title, author, year, grade, semester, category, type, thumbnail: thumbnailUrl, detail_images: detailImages, description };
 
-                showStatus(`✅ 프로젝트가 성공적으로 등록되었습니다! <a href="main.html" style="color:inherit; font-weight:bold; text-decoration:underline;">메인 화면에서 확인하기</a>`, 'success');
-                document.getElementById('project-form').reset();
+                if (isEdit) {
+                    const { data, error } = await supabaseClient
+                        .from('projects')
+                        .update(record)
+                        .eq('id', editingProject.id)
+                        .select();
+                    if (error) throw error;
+                    // RLS에 막히면 오류 없이 0행이 갱신되므로 따로 확인
+                    if (!data || data.length === 0) throw new Error('수정 권한이 없거나 존재하지 않는 프로젝트입니다.');
+
+                    // 저장 성공 후에만, 더 이상 쓰지 않는 예전 이미지를 Storage에서 정리
+                    const removed = [];
+                    if (thumbnailUrl !== editingProject.thumbnail) removed.push(editingProject.thumbnail);
+                    (editingProject.detail_images || []).forEach(u => { if (!detailImages.includes(u)) removed.push(u); });
+                    await removeFromStorage(removed);
+                } else {
+                    const { error } = await supabaseClient.from('projects').insert([record]).select();
+                    if (error) throw error;
+                }
+
+                showStatus(`✅ 프로젝트가 성공적으로 ${isEdit ? '수정' : '등록'}되었습니다! <a href="main.html" style="color:inherit; font-weight:bold; text-decoration:underline;">메인 화면에서 확인하기</a>`, 'success');
+                resetForm();
+                loadProjectList();
 
             } catch (err) {
                 console.error(err);
-                showStatus(`❌ 등록 중 오류가 발생했습니다: ${err.message}`, 'error');
+                // 저장이 실패했으면 이번에 올린 새 파일은 쓰레기가 되므로 정리
+                await removeFromStorage(uploadedUrls);
+                showStatus(`❌ ${isEdit ? '수정' : '등록'} 중 오류가 발생했습니다: ${escapeHTML(err.message)}`, 'error');
             } finally {
                 submitBtn.disabled = false;
             }
         });
-
-        // Supabase DB 전체 프로젝트 삭제 함수
-        async function clearAllProjects() {
-            if (!confirm("⚠️ 정말로 데이터베이스의 모든 프로젝트를 삭제하시겠습니까? (되돌릴 수 없습니다)")) return;
-
-            try {
-                showStatus('⏳ 데이터베이스의 프로젝트들을 삭제하는 중입니다...', 'loading');
-
-                const { data, error } = await supabaseClient
-                    .from('projects')
-                    .delete()
-                    .neq('id', 0); // 모든 id를 가진 행 삭제
-
-                if (error) throw error;
-
-                showStatus('🗑️ 모든 프로젝트 데이터가 삭제되었습니다. 이제 새로운 작품들을 등록할 수 있습니다.', 'success');
-            } catch (err) {
-                console.error(err);
-                showStatus(`❌ 삭제 중 오류 발생: ${err.message}`, 'error');
-            }
-        }
     </script>
 </body>
 </html>
