@@ -34,6 +34,8 @@
         .project-title { font-size: 20px; font-weight: bold; letter-spacing: -1px; margin: 0 0 15px 0; }
         .project-meta { font-size: 14px; color: #777; margin-bottom: 40px; border-bottom: 1px solid #dcdcdc; padding-bottom: 20px; }
         .project-meta span { display: inline-block; margin-right: 15px; }
+        .project-meta a { color: inherit; text-decoration: none; border-bottom: 1px solid #ccc; }
+        .project-meta a:hover { color: #111; border-color: #111; }
         .project-desc { font-size: 16px; line-height: 1.8; color: #444; word-break: keep-all; white-space: pre-line; }
         .project-gallery { flex: 3.5; display: flex; flex-direction: column; gap: 10px; }
         .project-gallery img { width: 100%; background-color: transparent; }
@@ -68,7 +70,7 @@
                     <span><strong>Year</strong> <span id="detail-year"></span></span>
                     <span><strong>Type</strong> <span id="detail-type"></span></span>
                     <span><strong>Author</strong> <span id="detail-author"></span></span>
-                    <span id="detail-professor-wrap" hidden><strong>Professor</strong> <span id="detail-professor"></span></span>
+                    <span id="detail-professor-wrap" hidden><strong>Professor</strong> <a id="detail-professor" href="main.html"></a></span>
                 </div>
                 <p class="project-desc" id="detail-desc"></p>
             </div>
@@ -113,7 +115,16 @@
             document.getElementById('detail-type').textContent = project.type || '-';
             document.getElementById('detail-author').textContent = project.author || '-';
             if (project.professor) {
-                document.getElementById('detail-professor').textContent = project.professor;
+                // 영문 이름이 있으면 "영문 (한글)", 없으면 한글만. 누르면 그 교수님 작품 목록으로 이동
+                const profEl = document.getElementById('detail-professor');
+                let nameEn = PROFESSOR_LABELS[project.professor] || '';
+                if (!nameEn) {
+                    const { data: prof } = await supabaseClient
+                        .from('professors').select('name_en').eq('name', project.professor).maybeSingle();
+                    nameEn = (prof && prof.name_en) || '';
+                }
+                profEl.textContent = nameEn ? `${nameEn} (${project.professor})` : project.professor;
+                profEl.href = `main.html?professor=${encodeURIComponent(project.professor)}`;
                 document.getElementById('detail-professor-wrap').hidden = false;
             }
 

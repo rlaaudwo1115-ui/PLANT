@@ -494,7 +494,7 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>담당 교수 <span class="req">*</span></label>
+                    <label>담당 교수 <span class="req" id="prof-required">*</span></label>
                     <select id="professor" required>
                         <option value="">교수님을 선택해 주세요</option>
                     </select>
@@ -679,6 +679,10 @@
                 gradeGroup.style.display = 'none';
                 semesterGroup.style.display = 'none';
             }
+            // 공모전(competition)은 담당 교수가 없을 수 있으므로 선택 사항
+            const profRequired = category !== 'competition';
+            document.getElementById('professor').required = profRequired;
+            document.getElementById('prof-required').hidden = !profRequired;
         }
 
         function showStatus(text, type, targetId = 'status-msg') {
@@ -967,7 +971,7 @@
             info.className = 'project-row-info';
             info.innerHTML = `
                 <div class="project-row-title">${escapeHTML(project.title)}</div>
-                <div class="project-row-meta">${escapeHTML(project.author)} · ${escapeHTML(project.year || '-')} · ${escapeHTML(categoryLabel(project))} · ${project.professor ? escapeHTML(project.professor) : '<span class="missing-prof">교수 미지정</span>'}</div>
+                <div class="project-row-meta">${escapeHTML(project.author)} · ${escapeHTML(project.year || '-')} · ${escapeHTML(categoryLabel(project))} · ${project.professor ? escapeHTML(project.professor) : project.category === 'competition' ? '' : '<span class="missing-prof">교수 미지정</span>'}</div>
             `;
 
             const actions = document.createElement('div');
@@ -1051,7 +1055,7 @@
                 const semester = category === 'studio' ? parseInt(document.getElementById('semester').value) : 0;
                 const type = document.getElementById('type').value;
                 const professor = document.getElementById('professor').value;
-                if (!professor) throw new Error('담당 교수님을 선택해주세요.');
+                if (!professor && category !== 'competition') throw new Error('담당 교수님을 선택해주세요.');
                 // 줄바꿈은 그대로 저장 (상세 페이지에서 일반 텍스트로 표시)
                 const description = document.getElementById('description').value.trim();
 
