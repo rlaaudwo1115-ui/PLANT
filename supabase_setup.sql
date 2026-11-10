@@ -80,6 +80,9 @@ create table if not exists public.professors (
   created_at timestamp with time zone default now() not null
 );
 alter table public.professors enable row level security;
+-- 새로 만든 표는 웹사이트(anon/로그인 사용자)에 접근 권한을 직접 줘야 함
+grant select on public.professors to anon, authenticated;
+grant insert on public.professors to authenticated;
 
 drop policy if exists "Anyone can read professors" on public.professors;
 create policy "Anyone can read professors"
