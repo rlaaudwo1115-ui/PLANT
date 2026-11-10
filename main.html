@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YAA! Plant - Projects</title>
-    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="common.css?v=20261110">
     <style>
         .gallery-container { padding: 90px 60px 60px 60px; max-width: 1800px; margin: 0 auto; }
 
@@ -102,9 +102,9 @@
 
     <footer id="site-footer" class="site-footer"></footer>
 
-    <script src="layout.js"></script>
+    <script src="layout.js?v=20261110"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-client.js"></script>
+    <script src="supabase-client.js?v=20261110"></script>
 
     <script>
         let allProjects = [];
@@ -229,7 +229,12 @@
 
             allProjects = data || [];
             readURL();
-            render();
+            try {
+                render();
+            } catch (err) {
+                console.error('목록 표시 실패:', err);
+                grid.innerHTML = '<p class="grid-message">목록을 표시하지 못했습니다. 새로고침(Ctrl+F5) 해 주세요.</p>';
+            }
         }
 
         loadProjects();
