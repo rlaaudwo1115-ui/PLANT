@@ -655,8 +655,11 @@
             const { error } = await supabaseClient.from('professors').insert({ name, name_en: nameEn });
             btn.disabled = false;
             if (error && error.code !== '23505') { // 23505 = 이미 등록된 이름
-                addProfMsg.textContent = error.code === '42P01' || /professors/.test(error.message)
-                    ? '교수님 목록 표가 아직 없습니다. Supabase SQL Editor에서 supabase_setup.sql을 실행해 주세요.'
+                addProfMsg.textContent =
+                    error.code === '42P01' || error.code === 'PGRST205'
+                        ? '교수님 목록 표가 아직 없습니다. Supabase SQL Editor에서 supabase_setup.sql을 실행해 주세요.'
+                    : error.code === '42501'
+                        ? '교수님 목록 표에 접근 권한이 없습니다. 관리자 계정인지 확인하거나, Supabase에서 grant 권한 설정을 실행해 주세요.'
                     : `추가하지 못했습니다: ${error.message}`;
                 return;
             }
